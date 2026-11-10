@@ -54,7 +54,8 @@ With option A, the donor's contact positions become inputs to the CAD. I'll send
 | Faceplate front | +9.0 | | 2.0 mm wall, so the inner face is at +7.0 |
 | Touch gap | +6.4 | +7.0 | Touch senses through 2.6 mm of plastic and air; the AT42QT1011 works through up to 6 mm |
 | Front board (4-layer, 1.6 mm) | +4.8 | +6.4 | LEDs reverse-mounted on its back face, shining forward through cutouts into the light guides |
-| Clear gap | +1.6 | +4.8 | 3.2 mm above the tallest rear-board part |
+| ESP32-C6-MINI-1 | +2.4 | +4.8 | On the front board's **back** face. On the front face it would reach +8.8, through the plate's inner face at +7.0 (found in the concept render). |
+| Clear gap | +1.6 | +4.8 | 3.2 mm above the tallest rear-board part, but only 0.8 mm under the ESP32. The ESP32 must not sit over the LD03 in plan view; I'll offset them at layout. |
 | LD03 top | | +1.6 | 17.6 mm tall, on the rear board's top face |
 | Relay tops | | −0.3 | 15.7 mm tall, same face |
 | Plug pin tips | | −8.7 | 9.0 − 17.7 mm pin length |
