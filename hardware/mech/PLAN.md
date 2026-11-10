@@ -1,6 +1,6 @@
 # EVT1 layout and enclosure plan v0.1
 
-Status: **for Daniel's sign-off.** Nothing below is built yet. The PCB outputs are drafts for engineering review, not a release. The printed parts are for bench and lab pre-assessment only.
+Status: **signed off by Daniel, 10 Nov 2026** (decisions in section 10). The PCB outputs are drafts for engineering review, not a release. The printed parts are for bench and lab pre-assessment only.
 
 Scope:
 - PCB layout v0.1 of both boards (rear and front), with mechanical outlines;
@@ -160,13 +160,12 @@ Print notes: allow ±0.2 mm for FDM and ±0.1 mm for SLA. Each part gets an orie
 | 25 Nov–1 Dec | Routing, DRC, review package. |
 | 2–8 Dec | Your review and the fixes. Gerbers. Order about 10 Dec: JLC 2-layer 2 oz plus 4-layer, about 1 week to build plus 1–2 weeks shipping to Accra. |
 
-## 10. For sign-off
+## 10. Decisions (signed off by Daniel, 10 Nov 2026)
 
-1. Outlet contacts: option A (donor contacts), B or C.
-2. The donor: you buy 3 of one unswitched twin socket model available in Accra and measure it with my checklist.
-3. The board-to-board link becomes a 14-way 1.0 mm FFC instead of the 2 × 7 header.
-4. Printing: your own printer, or a service in Accra? The material decides which parts you can print yourself, and FR PC/ABS needs a printer with an enclosed chamber.
-5. Front board thickness: 1.6 mm, or 1.0 mm for 0.6 mm more clearance.
+1. **Outlet contacts:** option A. Contacts and shutters come from a certified unswitched twin socket, fitted into printed carriers. Daniel buys 3 of one model sold in Accra and measures it with `DONOR-CHECKLIST.md`.
+2. **Board link:** a 14-way, 1.0 mm FFC with FPC connectors replaces the 2 × 7, 1.27 mm header (J4/J101).
+3. **Printing:** a print service in Accra. I supply the STLs plus a sheet of materials and settings.
+4. **Front board:** 1.6 mm thick. The ESP32 sits on its back face, offset from the LD03 in plan view.
 
 ## Sources
 
