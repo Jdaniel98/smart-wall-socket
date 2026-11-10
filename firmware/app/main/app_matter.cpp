@@ -385,9 +385,7 @@ static esp_err_t add_metering(endpoint_t *ep, int k)
 
     auto &epm = cfg.with_electrical_power_measurement();
     epm.feature_flags = cluster::electrical_power_measurement::feature::alternating_current::get_id();
-    epm.power_mode = static_cast<uint8_t>(EPM::PowerModeEnum::kAc);
-    epm.number_of_measurement_types = MATTER_ARRAY_SIZE(kPowerAccuracy);
-    epm.delegate = &s_power[k];
+    epm.delegate = &s_power[k]; /* supplies power mode, accuracy and readings */
 
     auto &eem = cfg.with_electrical_energy_measurement();
     eem.feature_flags = cluster::electrical_energy_measurement::feature::imported_energy::get_id() |

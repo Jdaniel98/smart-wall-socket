@@ -100,6 +100,7 @@ Record every result in the table at the end. A test passes only if all its crite
 | T8 | Sustained over-current | i_limit 8 A, same kettle | Locks after about 5 s |
 | T9 | Offline | Unplug the router's internet (LAN up), then the router | Button, schedules and protection keep working; telemetry resumes on reconnect with `wh` continuous |
 | T10 | Matter | Toggle from Apple Home during normal running and during a restore wait | Normal: switches within 1 s. Waiting: the app shows on and the relay closes when the delay ends |
+| T10b | Matter metering | Kettle on outlet 0; read the outlet in Home Assistant (Matter integration) and, with iOS 27, in Apple Home | Watts within ±2% of the reference; kWh rises and matches `status`; outlet 1 shows about 0 W |
 | T11 | Watchdog | `reboot` with a load on | Relays drop at once, then the restore delay runs |
 | T12 | Meter fault | Not testable without opening the BL0939 link; covered by host tests | — |
 

@@ -42,7 +42,6 @@ Power-up counts as a restoration: outlets wait out their restore delay before sw
 - Secure boot and flash encryption stay **off**: enabling them burns eFuses permanently on a bench unit.
 - PWM relay holding stays off by default until the Sonoff's coil drive is measured.
 - The S1/S2 inputs are disabled: they sit at mains potential on a non-isolated board.
-- Metering over Matter (Electrical Power and Energy Measurement clusters, which need delegate classes) is the next increment. Metering goes over MQTT for now.
 
 **Offline build.** `SWS_OFFLINE=1` builds without the component registry (Matter off, local cJSON, esp-mqtt from a clone). CI builds both variants.
 
@@ -50,3 +49,15 @@ Power-up counts as a restoration: outlets wait out their restore delay before sw
 
 - The safety logic is tested on every push without hardware.
 - Flash budget: 2 × 1.875 MB app slots on 4 MB. If Matter, TLS and MQTT outgrow a slot on the ESP32, Proto 0 falls back to one large app partition and serial updates. The EVT module (ESP32-C6-MINI-1-H4) has the same 4 MB.
+
+## Amendment, 2026-11-10: metering over Matter
+
+Each outlet endpoint now carries the Electrical Sensor device type (0x0510) alongside On/Off Plug-in Unit:
+
+- Power Topology with the tree feature (the endpoint measures itself).
+- Electrical Power Measurement (AC): active power, RMS voltage, RMS current, power factor.
+- Electrical Energy Measurement: imported, cumulative.
+
+The sensor sits on the plug's own endpoint, not a separate one. Multi-outlet metering products are laid out this way, and Apple Home shows live watts only on outlet-type accessories.
+
+Threading change: the control task never takes the Matter stack lock. On/off and meter updates are copied into a small shared struct (guarded by a spinlock) and applied on the Matter thread via `PlatformMgr().ScheduleWork`. Before this, `matter_report_onoff` waited on the stack lock with no timeout, so a long Matter operation could stall protection and trip the 2 s watchdog.
