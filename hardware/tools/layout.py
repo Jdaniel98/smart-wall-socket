@@ -110,7 +110,7 @@ class BlockLayout:
         s = p.sym
         if not hasattr(s, "variants"):
             return s
-        n1, n2 = p.conn.get("1"), p.conn.get("2")
+        n1, n2 = (p.conn.get(pin.nums[0]) for pin in s.pins[:2])
         r1, r2 = self.rails.get(n1), self.rails.get(n2)
         if r1 == "rail" or r2 == "gnd":
             return s.variants["V"]      # pin 1 on top
@@ -160,10 +160,11 @@ class BlockLayout:
                     right_pin = outs[0][1] if outs else None
                     # choose orientation: link to previous on the left
                     s = byref[cur].sym
+                    first, second = (pin.nums[0] for pin in s.pins[:2])
                     if left_pin is not None:
-                        v = "H" if left_pin == "1" else "HR"
+                        v = "H" if left_pin == first else "HR"
                     elif right_pin is not None:
-                        v = "H" if right_pin == "2" else "HR"
+                        v = "H" if right_pin == second else "HR"
                     else:
                         v = "H"
                     chain.append((byref[cur], s.variants[v]))

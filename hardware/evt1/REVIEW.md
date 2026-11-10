@@ -1,13 +1,13 @@
 # EVT1 schematic: review notes
 
-Draft D, 10 Nov 2026. For Daniel's engineering review before layout starts.
+Draft E, 10 Nov 2026. For Daniel's engineering review before layout starts.
 
-## S2 simulation checks (10 Nov 2026): block 5 must change
+## What changed in draft E (S2 simulation checks)
 
 Full study: `hardware/sim/S2-study.md`.
 
 - **Polarity and earth check fails as drawn.** The draft C hysteresis (R31/R33, R32/R34) feeds the 1 MΩ peak-detector node and latches it at about 2.8 V. **A socket with no earth reads "earthed and correct".** Keeping the peak detector and moving the hysteresis still fails most corners: BAT54WS leakage at 85 °C, and the mains range overlapping the factor of 2 between earthed and unearthed.
-- **Proposed scheme F (needs Daniel's sign-off, then draft E):**
+- **Scheme F, accepted by Daniel and drawn in draft E:**
   - remove the peak detector: C12, R33 and R34 out;
   - D3 becomes a BAS116 low-leakage diode in series;
   - R17/R20 47 kΩ, R21 470 kΩ, threshold ladder 182k/100k/49.9k;
@@ -16,7 +16,8 @@ Full study: `hardware/sim/S2-study.md`.
   - end-of-line test stores each unit's reference ratio.
   
   This passes every corner: 185–265 V, earth–neutral 0–30 V, arms ±20 %, 0–85 °C.
-- **Limit of any passive check:** a plugged-in appliance's EMI filter hides a missing earth. No-earth can only be reported from a wiring test with both outlets empty. This feeds D3: no-earth advisory, swapped keeps the outlets off.
+- **Limit of any passive check:** a plugged-in appliance's EMI filter hides a missing earth. No-earth can only be reported from a wiring test with both outlets empty.
+- **D3 decided (Daniel, 10 Nov 2026):** no earth gives a warning only, from an installer wiring test run with both outlets empty. Swapped L/N keeps the outlets off. The check runs at power-on with the relays open.
 - **Relays pass.** Pull-in margin is 0.37 V with an 85 °C coil. Proposed holding duty is 600 permille at 23 °C, scaled by the NTC temperature.
 - **5 V rail passes.** Worst dip 0.18 V; the LD03 peaks at 607 mA, under its 660 mA limit. Firmware rule: stagger the relay pull-ins by at least 60 ms.
 
@@ -81,7 +82,7 @@ All six accepted by Daniel on 10 Nov 2026. D7 is required by the firmware. D8 is
 | 15 | LED_PWR_EN | Light-line 5 V switch, high = on (strap, pulled down) |
 | 18, 19 | RELAY1, RELAY2 | LEDC PWM to the relay drivers |
 | 20, 21 | MTR_RX, MTR_TX | UART1 to the BL0939 through the isolator |
-| 22, 23 | POL_A, POL_B | Polarity and earth bits |
+| 22, 23 | POL_A, POL_B | Polarity and earth pulse trains (50 Hz, edge-timed) |
 | 16, 17 | U0TXD, U0RXD | UART0 test pads |
 
 ## Open items before layout
@@ -135,7 +136,13 @@ A new `board_evt_c6.c` with:
 - `div_r_bottom_kohm = 0.47`.
 - Touch inputs active high. The board struct gains a polarity flag; today it assumes active low.
 - Light lines on RMT with a power-enable pin, instead of the single status LED.
-- POL_A/POL_B read only while the BL0939 reports 207–253 V. The isolator's outputs read high whenever the hot side is unpowered.
+- Polarity check (scheme F, `hardware/sim/S2-study.md`): with the relays open, timestamp POL_A/POL_B edges over 10 mains cycles. Take duty d of A, or of B if A never goes high. Amplitude = (TH/g + Vf)/cos(πd), with TH_A 1.490 V, TH_B 0.496 V, g 0.911, Vf 0.50 V. Ratio k = amplitude / (BL0939 Vrms × √2), compared with the unit's stored k0:
+  - above 0.68: correct;
+  - 0.33–0.68: no earth (warning);
+  - below 0.33: swapped (outlets stay off).
+  
+  A duty of 100 % means the hot side is down (isolator default). Store k0 at end-of-line test.
+- Relay holding: 600 permille at 23 °C × (1 + 0.00393 (T − 23)) from the relay's NTC, capped at 1000. Start the second relay's pull-in at least 60 ms after the first.
 - ALARM ignored until the BL0939's MODE register is written. Until then CF outputs energy pulses.
 - NTC temperature as the over-temperature source.
 

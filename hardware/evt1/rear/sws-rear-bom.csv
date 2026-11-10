@@ -3,14 +3,14 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 4,C2 C5 C22 C25,10u 25V,,,C15850,"JLC basic, confirm at order",Capacitor_SMD:C_0805_2012Metric,yes,
 6,C3 C4 C11 C13 C14 C16,100n,,,C14663,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
 5,C6 C7 C8 C9 C10,33n C0G/X7R,,,to assign,,Capacitor_SMD:C_0603_1608Metric,yes,
-6,C12 C15 C17 C20 C21 C27,1u,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
+5,C15 C17 C20 C21 C27,1u,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
 1,C18,1u 25V,,,to assign,,Capacitor_SMD:C_0805_2012Metric,yes,
 1,C19,150u 10V 105C,,,to assign,,Capacitor_SMD:CP_Elec_6.3x7.7,yes,
 1,C24,1u 16V,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,BP/M: 1 uF = reduced current limit
 1,C26,100u 16V 105C,,,to assign,,Capacitor_SMD:CP_Elec_6.3x7.7,yes,
 3,D1 D8 D10,M7 1000V 1A,M7,,C95872,"JLC basic, confirm at order",Diode_SMD:D_SMA,yes,"Feedback sample diode, glass passivated; Two in series: a negative surge puts up to 1.7 kV across the string"
 1,D2,BZT52C5V1,BZT52C5V1,,to assign,,Diode_SMD:D_SOD-123,yes,Clamps the sense node in a surge
-1,D3,BAT54WS,BAT54WS,MDD,C5251553,"yes, 10 Nov 2026",Diode_SMD:D_SOD-323,yes,
+1,D3,BAS116,"BAS116,215",Nexperia,C48502,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23,yes,Low leakage (5 nA max): keeps the negative half-wave off the comparator inputs
 1,D4,SMBJ7.0A,SMBJ7.0A-TP,MCC,C669050,"yes, 10 Nov 2026",Diode_SMD:D_SMB,yes,
 2,D5 D6,SS14,SS14,,C2480,"JLC basic, confirm at order",Diode_SMD:D_SMA,yes,Freewheel; carries coil current during PWM
 1,D9,ES1J 600V 35ns,ES1J,,to assign,,Diode_SMD:D_SMA,yes,"Freewheel, trr <= 35 ns"
@@ -29,16 +29,15 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 5,R3 R4 R5 R6 R13,1k,,,C21190,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 5,R7 R8 R9 R10 R11,390k 1% 1206,,,to assign,,Resistor_SMD:R_1206_3216Metric,yes,
 1,R12,470R 0.5%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-5,R14 R25 R26 R31 R32,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,Input limit when D2 clamps; with R33 sets hysteresis; Input limit when D2 clamps; with R34 sets hysteresis; TX/SDO needs an external pull-up
+5,R14 R25 R26 R31 R32,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,Input current limit; TX/SDO needs an external pull-up
 4,R15 R16 R18 R19,2M VR37 3.5kV,VR37000002004FA100,Vishay,to assign,,Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal,yes,
-2,R17 R20,20k 1%,,,C4184,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-1,R21,1M,,,C22935,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-1,R22,220k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R23,68k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R24,30k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+2,R17 R20,47k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,Equal to R17 so a floating earth sits at mid-supply
+1,R21,470k,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+1,R22,182k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+1,R23,100k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+1,R24,49.9k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
 2,R27 R29,100R,,,C22775,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 2,R28 R30,100k,,,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-2,R33 R34,330k,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,"Hysteresis: bit A sets above 1.05 V, clears below 0.95 V; Hysteresis: bit B sets above 0.32 V, clears below 0.22 V"
 1,R35,3.09k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
 1,R36,2.49k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
 1,R37,2.4k,,,to assign,,Resistor_SMD:R_0603_1608Metric,DNP,"Preload, fit only if no-load regulation needs it"

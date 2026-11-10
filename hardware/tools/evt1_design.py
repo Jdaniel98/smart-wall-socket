@@ -73,6 +73,7 @@ S_CP = two_pin("C_Polarized", "CP", "C", desc="Polarised capacitor, pin 1 = +")
 S_L = two_pin("L", "L", "L", desc="Inductor")
 S_D = two_pin("D", "D", "D", desc="Diode, pin 1 = K, pin 2 = A")
 S_DS = two_pin("D_Schottky", "DS", "D", desc="Schottky diode, pin 1 = K, pin 2 = A")
+S_D_SOT23 = two_pin("D_SOT23", "D", "D", n1="3", n2="1", desc="Diode in SOT-23: pin 3 = K, pin 1 = A, pin 2 not connected")
 S_DZ = two_pin("D_Zener", "DZ", "D", desc="Zener diode, pin 1 = K, pin 2 = A")
 S_TVS = two_pin("D_TVS_Uni", "TVS", "D", desc="Unidirectional TVS, pin 1 = K, pin 2 = A")
 S_F = two_pin("Fuse", "F", "F", desc="Fuse")
@@ -328,29 +329,28 @@ meter = Block(
     ])
 
 polarity = Block(
-    "5. Polarity and earth check",
-    "Arm A: E -> 2 x 2M (HV) -> sense 20k -> L_BUS.  Arm B: E -> 2 x 2M (HV) + 20k -> N_F, so a missing earth floats to mid-supply.\n"
-    "Peak detector BAT54WS + 1u // 1M (tau 1 s); thresholds 1.02 V (bit A) and 0.31 V (bit B) from a 220k/68k/30k ladder,\n"
-    "with about 100 mV of hysteresis from R33/R34 so the bits cannot chatter near a threshold.\n"
-    "Correct: A=1 B=1.  Swapped L/N: A=0 B=0.  No earth: A=0 B=1.  Each arm must withstand a 6 kV impulse: VR37-class HV resistors.",
+    "5. Polarity and earth check (pulse-width ratio, S2 scheme F)",
+    "Arm A: E -> 2 x 2M (HV) -> sense 47k -> L_BUS.  Arm B: E -> 2 x 2M (HV) + 47k -> N_F, so a missing earth floats to mid-supply.\n"
+    "D3 (low leakage) passes the positive half-wave to R21; U4 compares it with 1.490 V (A) and 0.496 V (B). POL_A/POL_B are 50 Hz pulses.\n"
+    "Firmware: duty d -> amplitude (TH/g + Vf)/cos(pi d), divided by the BL0939 mains peak, ratio to the unit's end-of-line k0:\n"
+    "> 0.68 earthed and correct, 0.33-0.68 no earth (advisory, outlets empty only), < 0.33 swapped (outlets stay off). Run with relays open.\n"
+    "Each arm must withstand a 6 kV impulse: VR37-class HV resistors.",
     [
         R("R15", "2M VR37 3.5kV", "E_IN", "H_PA1", fp="R0411", mpn="VR37000002004FA100", mfr="Vishay"),
         R("R16", "2M VR37 3.5kV", "H_PA1", "H_POL_S", fp="R0411", mpn="VR37000002004FA100", mfr="Vishay"),
-        R("R17", "20k 1%", "H_POL_S", "L_BUS", **R20K),
+        R("R17", "47k 1%", "H_POL_S", "L_BUS"),
         R("R18", "2M VR37 3.5kV", "E_IN", "H_PB1", fp="R0411", mpn="VR37000002004FA100", mfr="Vishay"),
         R("R19", "2M VR37 3.5kV", "H_PB1", "H_PB2", fp="R0411", mpn="VR37000002004FA100", mfr="Vishay"),
-        R("R20", "20k 1%", "H_PB2", "N_F", **R20K),
+        R("R20", "47k 1%", "H_PB2", "N_F", note="Equal to R17 so a floating earth sits at mid-supply"),
         D(S_DZ, "D2", "BZT52C5V1", "H_POL_S", "L_BUS", "SOD123", note="Clamps the sense node in a surge"),
-        D(S_DS, "D3", "BAT54WS", "H_POL_PK", "H_POL_S", "SOD323", lcsc="C5251553", mfr="MDD", ver="yes"),
-        C("C12", "1u", "H_POL_PK", "L_BUS", **C1U),
-        R("R21", "1M", "H_POL_PK", "L_BUS", **R1M),
-        R("R22", "220k 1%", "+3V3_HOT", "H_TH_A"),
-        R("R23", "68k 1%", "H_TH_A", "H_TH_B"),
-        R("R24", "30k 1%", "H_TH_B", "L_BUS"),
-        R("R31", "10k", "H_POL_PK", "H_POL_INA", note="Input limit when D2 clamps; with R33 sets hysteresis", **R10K),
-        R("R32", "10k", "H_POL_PK", "H_POL_INB", note="Input limit when D2 clamps; with R34 sets hysteresis", **R10K),
-        R("R33", "330k", "H_POL_A", "H_POL_INA", note="Hysteresis: bit A sets above 1.05 V, clears below 0.95 V"),
-        R("R34", "330k", "H_POL_B", "H_POL_INB", note="Hysteresis: bit B sets above 0.32 V, clears below 0.22 V"),
+        Part("D3", S_D_SOT23, "BAS116", {"3": "H_POL_X", "1": "H_POL_S"}, FP["SOT23"], "C48502", "BAS116,215",
+             "Nexperia", "Low leakage (5 nA max): keeps the negative half-wave off the comparator inputs", False, "yes"),
+        R("R21", "470k", "H_POL_X", "L_BUS"),
+        R("R22", "182k 1%", "+3V3_HOT", "H_TH_A"),
+        R("R23", "100k 1%", "H_TH_A", "H_TH_B"),
+        R("R24", "49.9k 1%", "H_TH_B", "L_BUS"),
+        R("R31", "10k", "H_POL_X", "H_POL_INA", note="Input current limit", **R10K),
+        R("R32", "10k", "H_POL_X", "H_POL_INB", note="Input current limit", **R10K),
         U("U4", S_LMV393, "LMV393IDR", {"3": "H_POL_INA", "2": "H_TH_A", "5": "H_POL_INB", "6": "H_TH_B",
                                         "8": "+3V3_HOT", "4": "L_BUS", "1": "H_POL_A", "7": "H_POL_B"},
           "SOIC8", lcsc="C7984", mfr="TI", ver="yes"),
@@ -362,7 +362,7 @@ polarity = Block(
 iso = Block(
     "6. Digital isolator (ISO7761DWR), straddles the 8 mm barrier",
     "Side 1 (hot): BL0939 TX, zero-cross, polarity A/B, alarm in; BL0939 RX out. Side 2 (safe): firmware nets.\n"
-    "Routed slot under the package. Outputs default high if the other side is unpowered: firmware reads POL_x only while the meter is alive.",
+    "Routed slot under the package. Outputs default high if the other side is unpowered: a POL duty of 100 % means the hot side is down.",
     [
         U("U5", S_ISO, "ISO7761DWR", {
             "1": "+3V3_HOT", "8": "L_BUS", "2": "H_BL_TX", "3": "H_ZX", "4": "H_POL_A", "5": "H_POL_B",

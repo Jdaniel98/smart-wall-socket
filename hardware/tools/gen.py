@@ -18,7 +18,7 @@ import evt1_design as d  # noqa: E402
 
 OUT = os.path.normpath(os.path.join(HERE, "..", "evt1"))
 DATE = "2026-11-10"
-REV = "EVT1-draft-D"
+REV = "EVT1-draft-E"
 
 
 def all_parts(proj):
