@@ -55,20 +55,12 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 ## Open items before layout
 
-**R1. KP3310 drain surge. Mitigated in draft C; a simulation decides R2.**
+**R1. Hot-side supply. Simulated; decision needed.** Full study in `hardware/sim/R1-study.md`.
 
-- The KP3310's absolute maximum drain voltage is 650 V. A 561K MOV clamps at roughly 925 V at 25 A.
-- Draft C adds D7 (SMCJ400A, 447 V minimum breakdown) at the drain.
-- R2 sets the trade-off, because it carries both the surge current into D7 and the KP3310's charging current:
-  - a larger R2 (about 150–220 Ω) keeps D7's clamp voltage well under 650 V;
-  - a smaller R2 keeps the KP3310 charging window wide.
-- The simulation step must check two cases with R2 = 100, 150 and 220 Ω:
-  1. a 2 kV, 1.2/50 µs surge, for drain voltage and D7 energy;
-  2. normal operation at 207 V with a 15 mA load, for VDD hold-up.
-- Fallbacks if no R2 value works:
-  1. Swap RV1 to a 471K (lower clamp voltage).
-  2. Replace the KP3310 with a reinforced isolated DC-DC fed from the safe 5 V. Its own no-load loss means the standby benefit is not proven, and it adds a fifth part across the barrier.
-- Also ask Kiwi for the drain's avalanche rating.
+- The KP3310 can't do both jobs here. Surviving a 2 kV surge needs R2 ≥ 150 Ω with a 5 kW TVS. At that R2, half-wave charging delivers at most 5.7–8.5 mA, against 8–15 mA needed.
+- On negative surges, D1 sees up to 1.33 kV in reverse, more than one M7's 1000 V rating.
+- Recommendation: replace the KP3310, D7 and R2 with an LNK3204D half-wave buck: RF 47 Ω fusible, 2 × M7, π-filter 2 × 4.7 µF / 450 V + 1 mH, 5 V out, then a 3.3 V LDO. Simulated drain peak: 465 V at 4 kV, against a 725 V rating. Estimated standby about 0.1 W.
+- Draft C still shows the KP3310. The schematic changes once Daniel decides.
 
 **R2. Relay footprints.** The relay symbol's pin numbers (1 A1, 2 A2, 3 COM, 4 NO) are placeholders. Draw the G5RL-1A-E footprint from Omron's drawing, then confirm the HF115F/005-1HS3AF lands on it (D2).
 
