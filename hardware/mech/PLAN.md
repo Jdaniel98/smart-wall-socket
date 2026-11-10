@@ -80,10 +80,10 @@ The contacts run from just behind the shutters (about +6) down to the rear board
 ### Front board (SELV only)
 
 - **Outline:** a frame of about 136 × 76 mm in the faceplate cavity, with one cutout per outlet. Each cutout is the contact envelope plus 8 mm, so the board's copper keeps 8 mm from mains metal in air.
-- **ESP32-C6-MINI-1:** top centre. The antenna end sits at the top edge in the plate rim, in front of the box opening (z > 0, as spec v0.1 requires), with no copper under or around it.
+- **ESP32-C6-MINI-1:** bottom centre, on the back face, over the relays (2.7 mm clear of their tops). The antenna end sits at the bottom edge in the plate rim, in front of the box opening (z > 0, as spec v0.1 requires), with no copper under or around it. Top centre would put it 0.8 mm above the LD03. Proposed; confirm at placement.
 - **Touch:** one 20 mm electrode centred under each outlet, with a QT1011 beside each.
 - **Light lines:** the SK6812MINI-E LEDs in the touch zones, two per outlet.
-- **NFC:** the coil antenna in the centre strip, under the plate's NFC mark.
+- **NFC:** the coil antenna in the centre strip, under the plate's NFC mark. It now sits above the LD03, so check tag reads with the supply running at EVT.
 
 ### Board-to-board link
 

@@ -7,7 +7,7 @@ keys=list(mesh)
 # 1 assembled on the wall
 render([wall]+[get(k) for k in keys if k!="backbox"], eye=(-150,70,260), tgt=(0,0,0), out="/tmp/render/1_assembled.png")
 # 2 exploded (box hidden)
-off={"faceplate":(0,0,70),"light0":(0,0,70),"light1":(0,0,70),"front_board":(0,0,42),"esp32":(0,0,42),
+off={"frame":(0,0,26),"screw-60.3":(0,0,26),"screw60.3":(0,0,26),"fpc_front":(0,0,42),"faceplate":(0,0,70),"light0":(0,0,70),"light1":(0,0,70),"front_board":(0,0,42),"esp32":(0,0,42),
      "carrier0":(0,0,14),"carrier1":(0,0,14)}
 objs=[]
 for k in keys:
@@ -17,5 +17,8 @@ for k in keys:
     objs.append(get(k,o))
 render(objs, eye=(-210,150,230), tgt=(0,0,15), out="/tmp/render/2_exploded.png", fov=34)
 # 3 inside the back box: faceplate and front board removed
-render([get(k) for k in keys if k in ("backbox","rear_board","ld03","busbar") or k.startswith(("relay","carrier","contact"))],
+render([get(k) for k in keys if k in ("backbox","rear_board","ld03","busbar","ffc","fpc_rear","frame") or k.startswith(("relay","carrier","contact","screw"))],
        eye=(-120,140,170), tgt=(0,0,-15), out="/tmp/render/3_in_box.png", fov=34)
+
+# 4 back view: what the electrician sees (box hidden)
+render([get(k) for k in keys if k!="backbox"], eye=(150,110,-230), tgt=(0,0,-8), out="/tmp/render/4_back.png", fov=34, back=True)

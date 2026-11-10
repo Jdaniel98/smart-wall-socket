@@ -7,7 +7,7 @@ def look(eye, tgt, up=(0,1,0)):
     r=np.cross(f,up); r/=np.linalg.norm(r); u=np.cross(r,f)
     return eye, np.stack([r,u,-f])
 
-def render(objs, eye, tgt, W=1600, H=1000, fov=30, ss=2, bg=(246,246,244), out="r.png", up=(0,1,0)):
+def render(objs, eye, tgt, W=1600, H=1000, fov=30, ss=2, bg=(246,246,244), out="r.png", up=(0,1,0), back=False):
     W2,H2=W*ss,H*ss
     E,R=look(eye,tgt,up)
     fpx=(H2/2)/np.tan(np.radians(fov/2))
@@ -15,6 +15,7 @@ def render(objs, eye, tgt, W=1600, H=1000, fov=30, ss=2, bg=(246,246,244), out="
     nb=np.zeros((H2,W2,3)); idb=np.full((H2,W2),-1)
     L1=np.array([-0.4,0.6,0.7]);L1/=np.linalg.norm(L1)
     L2=np.array([0.6,-0.2,0.5]);L2/=np.linalg.norm(L2)
+    if back: L1=L1*np.array([1,1,-1]); L2=L2*np.array([1,1,-1])
     oid=0
     for V,T,col,off,alpha in objs:
         oid+=1
