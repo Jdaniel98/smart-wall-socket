@@ -277,5 +277,16 @@ esp_err_t net_start(const char *device_id)
 #endif
     /* With Matter, the Matter stack has created the default event loop and
      * brings Wi-Fi up after commissioning. */
-    return esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event, NULL);
+    const esp_err_t err = esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event, NULL);
+    if (err != ESP_OK) {
+        return err;
+    }
+    /* Wi-Fi may already be up (a commissioned Matter device reconnects fast),
+     * in which case the GOT_IP event fired before we registered. */
+    esp_netif_t *sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+    esp_netif_ip_info_t ip;
+    if (sta != NULL && esp_netif_get_ip_info(sta, &ip) == ESP_OK && ip.ip.addr != 0) {
+        ip_event(NULL, IP_EVENT, IP_EVENT_STA_GOT_IP, NULL);
+    }
+    return ESP_OK;
 }

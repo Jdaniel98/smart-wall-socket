@@ -451,13 +451,11 @@ static void publish_reported(void)
     }
 }
 
+/* Saves the energy counters even without a clock; alive_utc is 0 until the
+ * clock is set, which simply means no outage event for that power cut. */
 static void heartbeat(void)
 {
-    const int64_t now = utc_now();
-    if (now == 0) {
-        return;
-    }
-    heartbeat_t hb = {.alive_utc = now};
+    heartbeat_t hb = {.alive_utc = utc_now()};
     for (int k = 0; k < SWS_OUTLETS; k++) {
         hb.pulses[k] = s_energy.pulses[k];
     }
@@ -523,9 +521,10 @@ static void sync_matter(void)
     for (int k = 0; k < SWS_OUTLETS; k++) {
         const bool d = s_prot.o[k].desired_on;
         if (!s_matter_reported_valid[k] || s_matter_reported[k] != d) {
-            s_matter_reported[k] = d;
-            s_matter_reported_valid[k] = true;
-            matter_report_onoff(k, d);
+            if (matter_report_onoff(k, d)) { /* false until Matter has started */
+                s_matter_reported[k] = d;
+                s_matter_reported_valid[k] = true;
+            }
         }
     }
 }

@@ -134,7 +134,8 @@ bool net_publish(const char *subtopic, const char *payload, int qos, bool retain
 /* ---------- Matter ---------- */
 
 esp_err_t matter_start(void);
-void matter_report_onoff(int outlet, bool on);
+/* Returns false if Matter is not running yet. */
+bool matter_report_onoff(int outlet, bool on);
 bool matter_enabled(void);
 
 /* ---------- console ---------- */

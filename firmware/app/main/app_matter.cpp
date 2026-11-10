@@ -98,16 +98,17 @@ extern "C" esp_err_t matter_start(void)
     return err;
 }
 
-extern "C" void matter_report_onoff(int outlet, bool on)
+extern "C" bool matter_report_onoff(int outlet, bool on)
 {
     if (!s_started || outlet < 0 || outlet >= SWS_OUTLETS) {
-        return;
+        return false;
     }
     esp_matter_attr_val_t v = esp_matter_bool(on);
     lock::ScopedChipStackLock guard(portMAX_DELAY);
     s_reporting = true;
-    attribute::update(s_ep[outlet], OnOff::Id, OnOff::Attributes::OnOff::Id, &v);
+    const esp_err_t err = attribute::update(s_ep[outlet], OnOff::Id, OnOff::Attributes::OnOff::Id, &v);
     s_reporting = false;
+    return err == ESP_OK;
 }
 
 extern "C" void matter_factory_reset(void)

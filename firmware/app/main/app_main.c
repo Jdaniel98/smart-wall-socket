@@ -31,8 +31,9 @@ esp_err_t matter_start(void)
 {
     return ESP_OK;
 }
-void matter_report_onoff(int outlet, bool on)
+bool matter_report_onoff(int outlet, bool on)
 {
+    return false;
 }
 #endif
 
