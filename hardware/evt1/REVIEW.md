@@ -1,6 +1,16 @@
 # EVT1 schematic: review notes
 
-Draft B, 10 Nov 2026 (same circuit as draft A, redrawn one sheet per board with wired blocks). For Daniel's engineering review before layout starts.
+Draft C, 10 Nov 2026. For Daniel's engineering review before layout starts.
+
+## What changed in draft C
+
+| Change | Why |
+|---|---|
+| F1 is now a Schurter UMT-H 1 A time-lag fuse (3403.0274.23), 1500 A breaking capacity, 277 VAC. | If the MOV fails short, F1 has to interrupt the circuit's prospective fault current. The 1 A TE5 fuse planned before is rated to break only 25 A at 250 VAC. |
+| D7, SMCJ400A, clamps the KP3310 drain to ground. | Keeps the drain under its 650 V rating in a surge, provided R2 limits the current (see R1). It stays off in normal use: 400 V stand-off against a 389 V peak at 275 V. |
+| Comparator hysteresis: R31/R32 split the inputs; R33/R34 (330 kΩ) feed back from the outputs. | Bit A now sets above 1.05 V and clears below 0.95 V; bit B sets above 0.32 V and clears below 0.22 V. Worst cases (correct wiring at 207 V, no earth at 253 V) still clear both bands. |
+| Net ties NT1–NT4 at the shunt pads. | They force the BL0939 IP/IN traces to start at the shunt pads (Kelvin sensing), which the ±1 % target depends on. They are not BOM parts. |
+| Drawing: hot-side blocks tinted, IC pins grouped by function, decoupling capacitors placed with their ICs. | Readability. |
 
 ## Scope
 
@@ -8,7 +18,7 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 | Board | Sheet layout | Parts | Nets |
 |---|---|---|---|
-| Rear (`sws-rear`) | One sheet: hot side, hot-side sensing, barrier crossing, safe zone | 82 | 58 |
+| Rear (`sws-rear`) | One sheet: hot side, hot-side sensing, barrier crossing, safe zone | 86 (+ 4 net ties) | 63 |
 | Front (`sws-front`) | One sheet: power and processor, user interface | 67 | 45 |
 
 `verify.py` passes with 0 errors: the KiCad netlist matches the design data, and the safety rules in `hardware/README.md` hold.
@@ -45,15 +55,20 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 ## Open items before layout
 
-**R1. KP3310 drain rating versus the MOV clamp. Must resolve.**
+**R1. KP3310 drain surge. Mitigated in draft C; a simulation decides R2.**
 
-- The KP3310's absolute maximum drain voltage is 650 V.
-- A 561K MOV clamps at roughly 925 V at 25 A, and the KP3310 drain sees that clamp through only R2 (100 Ω) and D1.
-- Options, best first:
-  1. Replace the KP3310 with a small reinforced-isolation DC-DC fed from the safe 5 V. This also removes 0.1 to 0.2 W from standby.
-  2. Use a 471K MOV with a TVS at the drain, and check it in SPICE against a 2 kV, 1.2/50 µs surge.
-  3. Keep the KP3310 and confirm with Kiwi that its drain survives avalanche at the expected energy.
-- I recommend option 1. It adds one part that crosses the barrier, so the reinforced-barrier part list grows from four to five.
+- The KP3310's absolute maximum drain voltage is 650 V. A 561K MOV clamps at roughly 925 V at 25 A.
+- Draft C adds D7 (SMCJ400A, 447 V minimum breakdown) at the drain.
+- R2 sets the trade-off, because it carries both the surge current into D7 and the KP3310's charging current:
+  - a larger R2 (about 150–220 Ω) keeps D7's clamp voltage well under 650 V;
+  - a smaller R2 keeps the KP3310 charging window wide.
+- The simulation step must check two cases with R2 = 100, 150 and 220 Ω:
+  1. a 2 kV, 1.2/50 µs surge, for drain voltage and D7 energy;
+  2. normal operation at 207 V with a 15 mA load, for VDD hold-up.
+- Fallbacks if no R2 value works:
+  1. Swap RV1 to a 471K (lower clamp voltage).
+  2. Replace the KP3310 with a reinforced isolated DC-DC fed from the safe 5 V. Its own no-load loss means the standby benefit is not proven, and it adds a fifth part across the barrier.
+- Also ask Kiwi for the drain's avalanche rating.
 
 **R2. Relay footprints.** The relay symbol's pin numbers (1 A1, 2 A2, 3 COM, 4 NO) are placeholders. Draw the G5RL-1A-E footprint from Omron's drawing, then confirm the HF115F/005-1HS3AF lands on it (D2).
 
@@ -61,7 +76,7 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 **R4. NT3H2111 pinout.** Taken from the LCSC part listing (1 LA, 2 VSS, 3 SCL, 4 FD, 5 SDA, 6 VCC, 7 VOUT, 8 LB). Check it against NXP's datasheet before layout.
 
-**R5. Fuse position.** F1 sits in the neutral feed, because the hot side's ground has to be the live busbar for the shunts. For the L–N loop through the LD03 and KP3310 this is equivalent to Mornsun's live-side fuse, but ask the test lab.
+**R5. Fuse position.** F1 sits in the neutral feed, because the hot side's ground has to be the live busbar for the shunts. For the L–N loop through the LD03 and KP3310 this is equivalent to Mornsun's live-side fuse, but ask the test lab. Also ask what prospective fault current to design for at a socket-outlet; F1's 1500 A breaking capacity assumes a final circuit, not a point near the consumer unit.
 
 **R6. Placeholder footprints, drawn at layout:**
 
@@ -75,7 +90,7 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 - touch electrode
 - NFC loop antenna
 
-**R7. LCSC numbers still to assign: 39 parts.**
+**R7. LCSC numbers still to assign: 41 parts (33 rear, 8 front).** F1 (Schurter UMT-H) and D7 come from Schurter and Littelfuse distributors.
 
 - Parts that need choosing first: shunts, fuse, MOV, wirewound and flameproof resistors, electrolytics, HV resistors (Vishay VR37 is not on LCSC), NTCs, B2B connectors, inductor.
 - 1 % resistor values outside JLC's basic list.

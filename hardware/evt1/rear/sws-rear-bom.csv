@@ -11,7 +11,8 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 1,D3,BAT54WS,BAT54WS,MDD,C5251553,"yes, 10 Nov 2026",Diode_SMD:D_SOD-323,yes,
 1,D4,SMBJ7.0A,SMBJ7.0A-TP,MCC,C669050,"yes, 10 Nov 2026",Diode_SMD:D_SMB,yes,
 2,D5 D6,SS14,SS14,,C2480,"JLC basic, confirm at order",Diode_SMD:D_SMA,yes,Freewheel; carries coil current during PWM
-1,F1,"1A 300V T, TR5",,,to assign,,Fuse:Fuse_Littelfuse_395Series,yes,"Slow-blow, 300 V AC rated; Littelfuse 392/395 series or equivalent"
+1,D7,SMCJ400A,SMCJ400A,Littelfuse,to assign,,Diode_SMD:D_SMC,yes,"Drain clamp: VBR 447 V min, stays off at 275 V (389 V peak); keeps drain below 650 V if R2 limits current"
+1,F1,1A T 277VAC 1500A HBC,3403.0274.23,Schurter,to assign,,sws:Fuse_Schurter_UMT-H,yes,"UMT-H, breaking capacity 1500 A. Must clear a shorted MOV at household fault current; a 1 A TE5 breaks only 25 A"
 1,J1,Mains terminal L/N/E,Mains terminal L/N/E,,to assign,,sws:Mains_Terminal_3x2.5mm2,yes,Screw terminals for 3 x 2.5 mm2 ring conductors; part chosen with the mechanism
 1,J2,Outlet 1 contacts,Outlet 1 contacts,,to assign,,sws:BS1363_Outlet_Contacts,yes,
 1,J3,Outlet 2 contacts,Outlet 2 contacts,,to assign,,sws:BS1363_Outlet_Contacts,yes,
@@ -20,11 +21,11 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 1,PS1,LD03-23B05R2,LD03-23B05R2,Mornsun,to assign,,sws:Mornsun_LD03-23B,yes,Buy from Mornsun distributors or DigiKey 2725-LD03-23B05R2-ND; not LCSC third-party
 2,Q1 Q2,AO3400A,AO3400A,AOS,C20917,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,
 1,R1,12R 3W wirewound,,,to assign,,Resistor_THT:R_Axial_DIN0617_L17.0mm_D6.0mm_P20.32mm_Horizontal,yes,Inrush limit for LD03; fusible type
-1,R2,100R 1W flameproof,,,to assign,,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,yes,Surge/fault limiter for the KP3310 feed
+1,R2,100R 1W flameproof,,,to assign,,Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal,yes,"Limits surge current into D7. Value 100-220R set by simulation: higher protects D7, lower keeps KP3310 charging"
 5,R3 R4 R5 R6 R13,1k,,,C21190,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 5,R7 R8 R9 R10 R11,390k 1% 1206,,,to assign,,Resistor_SMD:R_1206_3216Metric,yes,
 1,R12,470R 0.5%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-4,R14 R25 R26 R31,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,Limits comparator input current when D2 clamps at 5.1 V; TX/SDO needs an external pull-up
+5,R14 R25 R26 R31 R32,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,Input limit when D2 clamps; with R33 sets hysteresis; Input limit when D2 clamps; with R34 sets hysteresis; TX/SDO needs an external pull-up
 4,R15 R16 R18 R19,2M VR37 3.5kV,VR37000002004FA100,Vishay,to assign,,Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal,yes,
 2,R17 R20,20k 1%,,,C4184,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 1,R21,1M,,,C22935,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
@@ -33,6 +34,7 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 1,R24,30k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
 2,R27 R29,100R,,,C22775,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 2,R28 R30,100k,,,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
+2,R33 R34,330k,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,"Hysteresis: bit A sets above 1.05 V, clears below 0.95 V; Hysteresis: bit B sets above 0.32 V, clears below 0.22 V"
 2,RS1 RS2,1m 2512 >=2W manganin,,,to assign,,Resistor_SMD:R_2512_6332Metric,yes,Outlet 1 shunt; 0.256 W at 16 A; Outlet 2 shunt
 1,RV1,"MOV 561K 10mm, thermally protected",,,to assign,,Varistor:RV_Disc_D12mm_W4.2mm_P7.5mm,yes,e.g. Littelfuse TMOV/ Bourns TMOV-type; 350 VAC
 2,TF1 TF2,TCO 15A 250V,,,to assign,,sws:TCO_Axial_15A,yes,Outlet 1 thermal cut-off; Tf TBD (EVT thermal test); Outlet 2 thermal cut-off

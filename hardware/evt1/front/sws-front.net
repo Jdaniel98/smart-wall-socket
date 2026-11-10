@@ -1,13 +1,13 @@
 (export (version "E")
   (design
     (source "/home/claude/smart-wall-socket/hardware/evt1/front/sws-front.kicad_sch")
-    (date "Tue Nov 10 13:51:11 2026")
+    (date "Tue Nov 10 14:12:10 2026")
     (tool "Eeschema 7.0.11+dfsg-1build4")
     (sheet (number "1") (name "/") (tstamps "/")
       (title_block
         (title "Smart Wall Socket EVT1, front board")
         (company "Aether Labs")
-        (rev "EVT1-draft-B")
+        (rev "EVT1-draft-C")
         (date "2026-11-10")
         (source "sws-front.kicad_sch")
         (comment (number "1") (value "Smart Wall Socket. DRAFT for engineering review, not a release."))

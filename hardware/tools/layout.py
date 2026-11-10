@@ -180,12 +180,30 @@ class BlockLayout:
         # order units by connectivity, biggest part first
         def unit_nets(u):
             return {n for p, _ in u for n in p.conn.values() if n and n != "NC" and n not in self.rails}
+        def rail_only(u):
+            return all(n in self.rails for p, _ in u for n in p.conn.values() if n and n != "NC")
+        rail_units = [u for u in units if rail_only(u)]
+        units = [u for u in units if not rail_only(u)] or rail_units[:1]
+        rail_units = [u for u in rail_units if u not in units]
         units.sort(key=lambda u: -max(len(s.pins) for _, s in u))
         order, rest = [units[0]], units[1:]
         while rest:
             have = set().union(*(unit_nets(u) for u in order))
             rest.sort(key=lambda u: -len(unit_nets(u) & have))
             order.append(rest.pop(0))
+
+        # decoupling capacitors go straight after the IC whose supply they share
+        for ru in rail_units:
+            rn = {n for p, _ in ru for n in p.conn.values() if n in self.rails}
+            at = len(order)
+            for i, u in enumerate(order):
+                if any(s.kind == "box" and rn <= {p.conn.get(pp.nums[0]) for pp in s.pins} for p, s in u):
+                    at = i + 1
+                    while at < len(order) and rail_only(order[at]):
+                        at += 1
+                    break
+            order.insert(at, ru)
+        self._rail_only = rail_only
 
         # unit geometry
         def unit_place(u, x, y):
@@ -249,7 +267,11 @@ class BlockLayout:
             lnets = {mp.conn.get(pp.nums[0]) for pp in ms.pins if pp.side == "L"} - set(self.rails)
             rnets = {mp.conn.get(pp.nums[0]) for pp in ms.pins if pp.side == "R"} - set(self.rails)
             side = {}
+            pside = next((pp.side for pp in ms.pins if self.rails.get(mp.conn.get(pp.nums[0])) == "rail"), "R")
             for u in order[1:]:
+                if rail_only(u):
+                    side[id(u)] = pside
+                    continue
                 un = unit_nets(u)
                 l, r = len(un & lnets), len(un & rnets)
                 if l != r:
@@ -695,9 +717,11 @@ def write_project(proj: Project, outdir: str, date: str, rev: str):
             f'    (instances (project {q(proj.name)} (path {q(path)} (reference "{ref}") (unit 1))))',
             "  )"])
 
+    tinted = {id(b) for sh in proj.sheets if sh.tint for b in sh.blocks}
     for (bl, fx, fy, w, h, dx, dy, notes) in frames:
+        fill = "(fill (type color) (color 214 92 64 0.10))" if id(bl.block) in tinted else "(fill (type none))"
         L.append(f'  (rectangle (start {mm(fx)} {mm(fy)}) (end {mm(fx + w)} {mm(fy + h)}) '
-                 f'(stroke (width 0.35) (type default)) (fill (type none)) (uuid {new_uuid()}))')
+                 f'(stroke (width 0.35) (type default)) {fill} (uuid {new_uuid()}))')
         L.append(T(bl.block.title.upper(), mm(fx + 1), mm(fy + 1), 1.8, True))
         if any(notes):
             L.append(T("\n".join(notes), mm(fx + 1), mm(fy + 4), 1.27))
@@ -706,7 +730,7 @@ def write_project(proj: Project, outdir: str, date: str, rev: str):
             X, Y = mm(pl.ox + dx), mm(pl.oy + dy)
             dnp = "yes" if p.dnp else "no"
             u = new_uuid(f"{proj.name}/{p.ref}")
-            L.append(f'  (symbol (lib_id {q(s.lib_id)}) (at {X} {Y} 0) (unit 1) (in_bom {"no" if p.dnp else "yes"}) '
+            L.append(f'  (symbol (lib_id {q(s.lib_id)}) (at {X} {Y} 0) (unit 1) (in_bom {"no" if (p.dnp or p.virtual) else "yes"}) '
                      f'(on_board yes) (dnp {dnp}) (uuid {u})')
             for prop, txt, tx, ty, j in pl.texts():
                 jj = "" if j == "center" else " (justify left)"

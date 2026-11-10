@@ -18,7 +18,7 @@ import evt1_design as d  # noqa: E402
 
 OUT = os.path.normpath(os.path.join(HERE, "..", "evt1"))
 DATE = "2026-11-10"
-REV = "EVT1-draft-B"
+REV = "EVT1-draft-C"
 
 
 def all_parts(proj):
@@ -31,6 +31,8 @@ def all_parts(proj):
 def write_bom(proj, folder):
     groups = {}
     for sh, b, p in all_parts(proj):
+        if p.virtual:
+            continue
         key = (p.value, p.footprint, p.lcsc, p.mpn, p.mfr, p.dnp, p.verified)
         groups.setdefault(key, []).append(p)
 

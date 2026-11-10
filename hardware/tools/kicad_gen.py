@@ -99,15 +99,18 @@ def box(name: str, left, right, ref="U", desc="") -> SymDef:
     s = SymDef(name=name, kind="box", ref=ref, desc=desc)
     n = max(len(left), len(right), 1)
     s.top = snap((n - 1) * G)
-    ln = max([len(p[1]) for p in left] + [0])
-    rn = max([len(p[1]) for p in right] + [0])
+    ln = max([len(p[1]) for p in left if p] + [0])
+    rn = max([len(p[1]) for p in right if p] + [0])
     w = (ln + rn) * CHAR_W + 3 * G
     s.w2 = max(5.08, math.ceil(w / 2 / 2.54) * 2.54)
     s.body_top = s.top + 2.54
     s.body_bot = -s.top - 2.54
     s.prims = [("rect", (-s.w2, s.body_top), (s.w2, s.body_bot), "background")]
     for side, lst in (("L", left), ("R", right)):
-        for i, (nums, pname, et) in enumerate(lst):
+        for i, entry in enumerate(lst):
+            if entry is None:       # blank row separates pin groups
+                continue
+            nums, pname, et = entry
             y = s.top - i * 2.54
             x, ang = (-s.w2 - PIN_LEN, 0) if side == "L" else (s.w2 + PIN_LEN, 180)
             s.pins.append(Pin([t.strip() for t in str(nums).split(",")], pname, et, side, x, y, ang))
@@ -126,6 +129,11 @@ def _two_pin_prims(k: str) -> list:
         if k == "SH":
             line((-1.27, 0.889), (-1.27, 1.778))
             line((1.27, 0.889), (1.27, 1.778))
+    if k == "NT":
+        g.clear()
+        g.append(("poly", [(-2.54, 0), (-1.016, 0)], "none"))
+        g.append(("poly", [(1.016, 0), (2.54, 0)], "none"))
+        g.append(("rect", (-1.016, 0.381), (1.016, -0.381), "outline"))
     if k == "TCO":
         g.clear()
         line((-2.54, 0), (-0.762, 0), (0.762, 1.016))
@@ -328,6 +336,7 @@ class Part:
     note: str = ""
     dnp: bool = False
     verified: str = ""
+    virtual: bool = False       # net tie: in the netlist and on the PCB, not in the BOM
 
 
 @dataclass
@@ -345,6 +354,7 @@ class Sheet:
     title: str
     blocks: list[Block]
     flags: list[str] = field(default_factory=list)   # nets that get a PWR_FLAG
+    tint: bool = False                               # shade frames: mains-referenced blocks
 
 
 @dataclass

@@ -42,7 +42,9 @@ FP = {
     "SSOP20": "Package_SO:SSOP-20_3.9x8.7mm_P0.635mm",
     "TSSOP8": "Package_SO:TSSOP-8_3x3mm_P0.65mm",
     "MOV10": "Varistor:RV_Disc_D12mm_W4.2mm_P7.5mm",
-    "TR5": "Fuse:Fuse_Littelfuse_395Series",
+    "UMTH": "sws:Fuse_Schurter_UMT-H",
+    "SMC": "Diode_SMD:D_SMC",
+    "NETTIE": "NetTie:NetTie-2_SMD_Pad0.5mm",
     "L4018": "Inductor_SMD:L_Bourns-SRN4018",
     "HDR2x7": "Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD",
     "SKT2x7": "Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD",
@@ -74,19 +76,20 @@ S_F = two_pin("Fuse", "F", "F", desc="Fuse")
 S_RV = two_pin("Varistor", "RV", "RV", desc="Metal-oxide varistor")
 S_NTC = two_pin("Thermistor_NTC", "NTC", "TH", desc="NTC thermistor")
 S_TCO = two_pin("Thermal_Cutoff", "TCO", "TF", desc="Non-resettable thermal cut-off")
-S_SH = two_pin("R_Shunt", "SH", "RS", desc="Current shunt; Kelvin taps are drawn in layout")
+S_SH = two_pin("R_Shunt", "SH", "RS", desc="Current shunt")
+S_NT = two_pin("NetTie", "NT", "NT", desc="Net tie: forces a Kelvin tap at the shunt pad in layout")
 S_ANT = two_pin("NFC_Antenna", "L", "ANT", desc="PCB loop antenna")
 S_E = one_pin("TouchPad", "E", desc="Capacitive touch electrode")
 S_TP = one_pin("TestPad", "TP", desc="Test pad")
 
 S_BL0939 = box("BL0939", [
-    ("3", "IP1", "input"), ("4", "IN1", "input"), ("5", "IP2", "input"), ("6", "IN2", "input"),
-    ("7", "VP", "input"), ("2", "VT", "input"),
+    ("3", "IP1", "input"), ("4", "IN1", "input"), ("5", "IP2", "input"), ("6", "IN2", "input"), None,
+    ("7", "VP", "input"), ("2", "VT", "input"), None,
     ("9", "A1", "input"), ("10", "A2", "input"), ("11", "A3", "input"), ("12", "A4", "input"),
 ], [
-    ("1", "VDD", "power_in"), ("8", "GND", "power_in"), ("16", "SEL", "input"),
-    ("18", "RX/SDI", "input"), ("19", "TX/SDO", "output"), ("13", "ZX", "output"),
-    ("15", "CF", "output"), ("14", "I_LEAK", "output"), ("17", "SCLK", "input"), ("20", "VPP", "passive"),
+    ("1", "VDD", "power_in"), ("8", "GND", "power_in"), ("16", "SEL", "input"), None,
+    ("18", "RX/SDI", "input"), ("19", "TX/SDO", "output"), None, ("13", "ZX", "output"),
+    ("15", "CF", "output"), ("14", "I_LEAK", "output"), None, ("17", "SCLK", "input"), ("20", "VPP", "passive"),
 ], desc="Belling BL0939, 2-channel metering, SSOP-20")
 
 S_KP3310 = box("KP3310SGA", [
@@ -106,10 +109,10 @@ S_OR = box("74LVC1G32", [("1", "A", "input"), ("2", "B", "input")],
            desc="Single 2-input OR, SOT-23-5")
 
 S_ISO = box("ISO7761DW", [
-    ("1", "VCC1", "power_in"), ("8", "GND1", "power_in"), ("2", "INA", "input"), ("3", "INB", "input"),
+    ("1", "VCC1", "power_in"), ("8", "GND1", "power_in"), None, ("2", "INA", "input"), ("3", "INB", "input"),
     ("4", "INC", "input"), ("5", "IND", "input"), ("6", "INE", "input"), ("7", "OUTF", "output"),
 ], [
-    ("16", "VCC2", "power_in"), ("9", "GND2", "power_in"), ("15", "OUTA", "output"), ("14", "OUTB", "output"),
+    ("16", "VCC2", "power_in"), ("9", "GND2", "power_in"), None, ("15", "OUTA", "output"), ("14", "OUTB", "output"),
     ("13", "OUTC", "output"), ("12", "OUTD", "output"), ("11", "OUTE", "output"), ("10", "INF", "input"),
 ], desc="TI ISO7761 6-ch reinforced digital isolator, 5 fwd / 1 rev, SOIC-16 wide. Side 1 = hot.")
 
@@ -150,16 +153,16 @@ S_TLV = box("TLV62569DBV", [("4", "VIN", "power_in"), ("1", "EN", "input")],
 GND_PINS = ",".join(["1", "2", "11", "14"] + [str(i) for i in range(36, 54)])
 NC_PINS = "4,7,21,32,33,34,35"
 S_ESP = box("ESP32-C6-MINI-1", [
-    ("3", "3V3", "power_in"), (GND_PINS, "GND", "power_in"), ("8", "EN", "input"),
+    ("3", "3V3", "power_in"), (GND_PINS, "GND", "power_in"), ("8", "EN", "input"), None,
     ("12", "IO0", "bidirectional"), ("13", "IO1", "bidirectional"), ("5", "IO2", "bidirectional"),
-    ("6", "IO3", "bidirectional"), ("9", "IO4", "bidirectional"), ("10", "IO5", "bidirectional"),
+    ("6", "IO3", "bidirectional"), None, ("9", "IO4", "bidirectional"), ("10", "IO5", "bidirectional"), None,
     ("15", "IO6", "bidirectional"), ("16", "IO7", "bidirectional"), ("22", "IO8", "bidirectional"),
 ], [
-    ("23", "IO9", "bidirectional"), ("17", "IO12/USB_D-", "bidirectional"), ("18", "IO13/USB_D+", "bidirectional"),
-    ("19", "IO14", "bidirectional"), ("20", "IO15", "bidirectional"), ("24", "IO18", "bidirectional"),
+    ("23", "IO9", "bidirectional"), None, ("17", "IO12/USB_D-", "bidirectional"), ("18", "IO13/USB_D+", "bidirectional"),
+    None, ("19", "IO14", "bidirectional"), ("20", "IO15", "bidirectional"), None, ("24", "IO18", "bidirectional"),
     ("25", "IO19", "bidirectional"), ("26", "IO20", "bidirectional"), ("27", "IO21", "bidirectional"),
-    ("28", "IO22", "bidirectional"), ("29", "IO23", "bidirectional"), ("30", "RXD0", "bidirectional"),
-    ("31", "TXD0", "bidirectional"), (NC_PINS, "NC", "no_connect"),
+    ("28", "IO22", "bidirectional"), ("29", "IO23", "bidirectional"), None, ("30", "RXD0", "bidirectional"),
+    ("31", "TXD0", "bidirectional"), None, (NC_PINS, "NC", "no_connect"),
 ], desc="Espressif ESP32-C6-MINI-1(-H4), 53 pads. GND and NC pads are stacked.")
 
 S_QT = box("AT42QT1011", [("4", "SNS", "passive"), ("3", "SNSK", "passive")],
@@ -221,7 +224,7 @@ C22U_0805 = dict(fp="C0805", lcsc="C45783")
 mains = Block(
     "1. Mains entry and outlet feeds",
     "Ring L/N/E land on the busbar; only outlet current passes the shunts and relays.\n"
-    "Shunt common end = L_BUS = hot-side ground. Route IP/IN as Kelvin taps from the shunt pads.\n"
+    "Shunt common end = L_BUS = hot-side ground. Net ties NT1-NT4 force the IP/IN taps to start at the shunt pads (Kelvin).\n"
     "Thermal cut-offs: non-resettable, clamped to the outlet feed near the contacts; Tf chosen after the EVT thermal test.",
     [
         U("J1", S_TERM, "Mains terminal L/N/E", {"1": "L_BUS", "2": "N_IN", "3": "E_IN"}, "TERM",
@@ -230,6 +233,10 @@ mains = Block(
              "Outlet 1 shunt; 0.256 W at 16 A"),
         Part("RS2", S_SH, "1m 2512 >=2W manganin", {"1": "L_BUS", "2": "H_I2"}, FP["R2512"], "", "", "",
              "Outlet 2 shunt"),
+        Part("NT1", S_NT, "Kelvin -", {"1": "L_BUS", "2": "H_S1N"}, FP["NETTIE"], note="At RS1 pad 1", virtual=True),
+        Part("NT2", S_NT, "Kelvin +", {"1": "H_I1", "2": "H_S1P"}, FP["NETTIE"], note="At RS1 pad 2", virtual=True),
+        Part("NT3", S_NT, "Kelvin -", {"1": "L_BUS", "2": "H_S2N"}, FP["NETTIE"], note="At RS2 pad 1", virtual=True),
+        Part("NT4", S_NT, "Kelvin +", {"1": "H_I2", "2": "H_S2P"}, FP["NETTIE"], note="At RS2 pad 2", virtual=True),
         Part("TF1", S_TCO, "TCO 15A 250V", {"1": "H_I1", "2": "H_K1"}, FP["TCO"], "", "", "",
              "Outlet 1 thermal cut-off; Tf TBD (EVT thermal test)"),
         Part("TF2", S_TCO, "TCO 15A 250V", {"1": "H_I2", "2": "H_K2"}, FP["TCO"], "", "", "",
@@ -241,10 +248,10 @@ mains = Block(
 feed = Block(
     "2. Electronics feed and surge protection",
     "Fuse and series resistor per Mornsun's LD03 application circuit. MOV after the fuse, thermally protected type.\n"
-    "Open item: the MOV clamp (~925 V at 25 A for 561K) exceeds the KP3310 drain rating (650 V). See review notes R1.",
+    "F1 is a 1500 A breaking-capacity fuse: if RV1 fails short, F1 must interrupt the circuit's prospective fault current.",
     [
-        Part("F1", S_F, "1A 300V T, TR5", {"1": "N_IN", "2": "N_F"}, FP["TR5"], "", "", "",
-             "Slow-blow, 300 V AC rated; Littelfuse 392/395 series or equivalent"),
+        Part("F1", S_F, "1A T 277VAC 1500A HBC", {"1": "N_IN", "2": "N_F"}, FP["UMTH"], "", "3403.0274.23", "Schurter",
+             "UMT-H, breaking capacity 1500 A. Must clear a shorted MOV at household fault current; a 1 A TE5 breaks only 25 A"),
         Part("RV1", S_RV, "MOV 561K 10mm, thermally protected", {"1": "L_BUS", "2": "N_F"}, FP["MOV10"], "", "",
              "", "e.g. Littelfuse TMOV/ Bourns TMOV-type; 350 VAC"),
         R("R1", "12R 3W wirewound", "N_F", "N_R", fp="R0617", note="Inrush limit for LD03; fusible type"),
@@ -253,12 +260,16 @@ feed = Block(
 hotsup = Block(
     "3. Hot-side 3.3 V supply (KP3310SGA)",
     "Half-wave from N_F; KP3310 charges VDD (7.8 V) while the line is low, then an LDO makes 3.3 V. SEL open = 3.3 V.\n"
+    "D7 clamps the drain below its 650 V rating in a surge; R2 limits the clamp current (value from the R1 simulation).\n"
     "Hold-up: 15 mA (worst case) x 20 ms / 220 uF = 1.4 V droop on VDD (7.8 V to 6.4 V), so VOUT stays in regulation.",
     [
-        R("R2", "100R 1W flameproof", "N_F", "H_KP_A", fp="R0207", note="Surge/fault limiter for the KP3310 feed"),
+        R("R2", "100R 1W flameproof", "N_F", "H_KP_A", fp="R0207",
+          note="Limits surge current into D7. Value 100-220R set by simulation: higher protects D7, lower keeps KP3310 charging"),
         D(S_D, "D1", "M7 1000V 1A", "H_KP_D", "H_KP_A", "SMA", lcsc="C95872", mpn="M7"),
         U("U1", S_KP3310, "KP3310SGA", {"5": "H_KP_D", "4": "H_KP_VDD", "1": "NC", "3": "+3V3_HOT", "2": "L_BUS"},
           "SOIC8", lcsc="C310447", mfr="Kiwi Instruments", ver="plan", note="SEL floating selects 3.3 V"),
+        D(S_TVS, "D7", "SMCJ400A", "H_KP_D", "L_BUS", "SMC", mpn="SMCJ400A", mfr="Littelfuse",
+          note="Drain clamp: VBR 447 V min, stays off at 275 V (389 V peak); keeps drain below 650 V if R2 limits current"),
         CP("C1", "220u 16V 105C", "H_KP_VDD", "L_BUS", note="VDD energy store (VDD abs max 9 V)"),
         C("C2", "10u 25V", "+3V3_HOT", "L_BUS", **C10U_0805),
         C("C3", "100n", "+3V3_HOT", "L_BUS", **C100N),
@@ -277,9 +288,9 @@ meter = Block(
             "17": "NC", "20": "NC"}, "SSOP20", lcsc="C2841044", mfr="Belling", ver="plan"),
         C("C4", "100n", "+3V3_HOT", "L_BUS", **C100N),
         C("C5", "10u 25V", "+3V3_HOT", "L_BUS", **C10U_0805),
-        R("R3", "1k", "H_I1", "H_IP1", **R1K), R("R4", "1k", "L_BUS", "H_IN1", **R1K),
+        R("R3", "1k", "H_S1P", "H_IP1", **R1K), R("R4", "1k", "H_S1N", "H_IN1", **R1K),
         C("C6", "33n C0G/X7R", "H_IP1", "L_BUS"), C("C7", "33n C0G/X7R", "H_IN1", "L_BUS"),
-        R("R5", "1k", "H_I2", "H_IP2", **R1K), R("R6", "1k", "L_BUS", "H_IN2", **R1K),
+        R("R5", "1k", "H_S2P", "H_IP2", **R1K), R("R6", "1k", "H_S2N", "H_IN2", **R1K),
         C("C8", "33n C0G/X7R", "H_IP2", "L_BUS"), C("C9", "33n C0G/X7R", "H_IN2", "L_BUS"),
         R("R7", "390k 1% 1206", "N_F", "H_VD1", fp="R1206"),
         R("R8", "390k 1% 1206", "H_VD1", "H_VD2", fp="R1206"),
@@ -298,7 +309,8 @@ meter = Block(
 polarity = Block(
     "5. Polarity and earth check",
     "Arm A: E -> 2 x 2M (HV) -> sense 20k -> L_BUS.  Arm B: E -> 2 x 2M (HV) + 20k -> N_F, so a missing earth floats to mid-supply.\n"
-    "Peak detector BAT54WS + 1u // 1M (tau 1 s); thresholds 1.02 V (bit A) and 0.31 V (bit B) from a 220k/68k/30k ladder.\n"
+    "Peak detector BAT54WS + 1u // 1M (tau 1 s); thresholds 1.02 V (bit A) and 0.31 V (bit B) from a 220k/68k/30k ladder,\n"
+    "with about 100 mV of hysteresis from R33/R34 so the bits cannot chatter near a threshold.\n"
     "Correct: A=1 B=1.  Swapped L/N: A=0 B=0.  No earth: A=0 B=1.  Each arm must withstand a 6 kV impulse: VR37-class HV resistors.",
     [
         R("R15", "2M VR37 3.5kV", "E_IN", "H_PA1", fp="R0411", mpn="VR37000002004FA100", mfr="Vishay"),
@@ -314,8 +326,11 @@ polarity = Block(
         R("R22", "220k 1%", "+3V3_HOT", "H_TH_A"),
         R("R23", "68k 1%", "H_TH_A", "H_TH_B"),
         R("R24", "30k 1%", "H_TH_B", "L_BUS"),
-        R("R31", "10k", "H_POL_PK", "H_POL_IN", note="Limits comparator input current when D2 clamps at 5.1 V", **R10K),
-        U("U4", S_LMV393, "LMV393IDR", {"3": "H_POL_IN", "2": "H_TH_A", "5": "H_POL_IN", "6": "H_TH_B",
+        R("R31", "10k", "H_POL_PK", "H_POL_INA", note="Input limit when D2 clamps; with R33 sets hysteresis", **R10K),
+        R("R32", "10k", "H_POL_PK", "H_POL_INB", note="Input limit when D2 clamps; with R34 sets hysteresis", **R10K),
+        R("R33", "330k", "H_POL_A", "H_POL_INA", note="Hysteresis: bit A sets above 1.05 V, clears below 0.95 V"),
+        R("R34", "330k", "H_POL_B", "H_POL_INB", note="Hysteresis: bit B sets above 0.32 V, clears below 0.22 V"),
+        U("U4", S_LMV393, "LMV393IDR", {"3": "H_POL_INA", "2": "H_TH_A", "5": "H_POL_INB", "6": "H_TH_B",
                                         "8": "+3V3_HOT", "4": "L_BUS", "1": "H_POL_A", "7": "H_POL_B"},
           "SOIC8", lcsc="C7984", mfr="TI", ver="yes"),
         C("C13", "100n", "+3V3_HOT", "L_BUS", **C100N),
@@ -392,8 +407,8 @@ REAR = Project(
     warning="Hot side is referenced to LIVE (L_BUS). Treat every hot-side net as mains.",
     sheets=[
         Sheet("Hot side", "", "Mains referenced. Hot-side ground = L_BUS = LIVE.",
-              [mains, feed, hotsup], flags=["L_BUS"]),
-        Sheet("Hot side, sensing", "", "Metering and wiring checks, all mains referenced.", [meter, polarity]),
+              [mains, feed, hotsup], flags=["L_BUS"], tint=True),
+        Sheet("Hot side, sensing", "", "Metering and wiring checks, all mains referenced.", [meter, polarity], tint=True),
         Sheet("Barrier crossing", "", "The only parts that bridge the barrier.", [iso, ld03, relays]),
         Sheet("Safe zone", "", "SELV.", [drivers, safe_misc]),
     ],
