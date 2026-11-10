@@ -1,0 +1,66 @@
+name: firmware
+
+on:
+  push:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  pull_request:
+    paths: ["firmware/**", ".github/workflows/firmware.yml"]
+  workflow_dispatch:
+
+jobs:
+  host-tests:
+    name: Host unit tests (ASan + UBSan)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cmake -S firmware/test/host -B build/host && cmake --build build/host -j
+      - name: Run
+        run: ./build/host/sws_tests
+
+  build:
+    name: ESP32 build (${{ matrix.variant }})
+    runs-on: ubuntu-24.04
+    container: espressif/idf:v6.0.2
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: matter
+            defaults: sdkconfig.defaults
+          - variant: no-matter
+            defaults: sdkconfig.defaults;sdkconfig.defaults.offline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline setup (no-matter only)
+        if: matrix.variant == 'no-matter'
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v1.1.0 https://github.com/espressif/esp-mqtt /tmp/offline/espressif__mqtt \
+            || git clone --depth 1 https://github.com/espressif/esp-mqtt /tmp/offline/espressif__mqtt
+          echo "SWS_OFFLINE=1" >> "$GITHUB_ENV"
+          echo "IDF_COMPONENT_MANAGER=0" >> "$GITHUB_ENV"
+          echo "SWS_OFFLINE_EXTRA=/tmp/offline" >> "$GITHUB_ENV"
+      - name: Build
+        shell: bash
+        working-directory: firmware/app
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py -B build -DSDKCONFIG=build/sdkconfig -DSDKCONFIG_DEFAULTS="${{ matrix.defaults }}" build
+      - name: Size
+        shell: bash
+        working-directory: firmware/app
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py -B build -DSDKCONFIG=build/sdkconfig size | tee build/size.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.variant }}
+          path: |
+            firmware/app/build/smart_wall_socket.bin
+            firmware/app/build/bootloader/bootloader.bin
+            firmware/app/build/partition_table/partition-table.bin
+            firmware/app/build/ota_data_initial.bin
+            firmware/app/build/flash_args
+            firmware/app/build/size.txt
+          if-no-files-found: error

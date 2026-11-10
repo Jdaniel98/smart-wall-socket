@@ -1,0 +1,4 @@
+# Overlay for builds without the component registry: no Matter, no BLE.
+# Wi-Fi credentials come from NVS (console: wifi <ssid> <pass>).
+CONFIG_SWS_MATTER=n
+CONFIG_BT_ENABLED=n

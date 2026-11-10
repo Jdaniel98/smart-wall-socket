@@ -1,0 +1,14 @@
+# Smart Wall Socket, 4 MB flash (Sonoff Dual R3 v2).
+# Name,   Type, SubType, Offset,   Size
+nvs,      data, nvs,     0x10000,  0xC000
+otadata,  data, ota,     0x1C000,  0x2000
+phy_init, data, phy,     0x1E000,  0x1000
+ota_0,    app,  ota_0,   0x20000,  0x1E0000
+ota_1,    app,  ota_1,   0x200000, 0x1E0000
+# Heartbeat (alive time + energy counters), written once a minute.
+# Its own 64 KB spreads the wear: about 260 erases per sector per year.
+nvs_hb,   data, nvs,     0x3E0000, 0x10000
+# Device identity for the cloud: MQTT URI, CA, client certificate and key.
+# Written by tools/provision.py, so re-provisioning never touches
+# calibration, energy or Matter pairing in "nvs".
+fctry,    data, nvs,     0x3F0000, 0x6000

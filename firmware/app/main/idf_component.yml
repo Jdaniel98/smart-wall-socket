@@ -1,0 +1,9 @@
+## Managed components, fetched by the IDF component manager at build time.
+dependencies:
+  idf: ">=6.0"
+  espressif/esp_matter:
+    version: "~1.6.1"
+  espressif/mqtt:
+    version: "^1.0.0"
+  espressif/cjson:
+    version: "^1.7.19"

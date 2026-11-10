@@ -1,0 +1,44 @@
+menu "Smart Wall Socket"
+
+    choice SWS_BOARD
+        prompt "Target board"
+        default SWS_BOARD_DUALR3V2
+        help
+            Hardware the firmware runs on. Proto 0 is a Sonoff Dual R3 v2 used
+            on the bench only; the EVT board is added when it exists.
+
+        config SWS_BOARD_DUALR3V2
+            bool "Proto 0: Sonoff Dual R3 v2 (BL0939)"
+    endchoice
+
+    config SWS_MATTER
+        bool "Matter (Apple Home, Google Home)"
+        default y
+        help
+            Two On/Off Plug-in Unit endpoints, commissioned over BLE. Matter
+            also provisions Wi-Fi. Turn off for a lighter bench build that
+            joins Wi-Fi from credentials stored in NVS.
+
+    config SWS_TELEMETRY_PERIOD_S
+        int "Telemetry period (s)"
+        default 10
+        range 5 300
+
+    config SWS_HEARTBEAT_PERIOD_S
+        int "Outage heartbeat period (s)"
+        default 60
+        range 30 600
+        help
+            How often the device records that it is alive (and its energy
+            counters) in the dedicated nvs_hb partition. This is the
+            resolution of outage start times and the most energy that can go
+            unrecorded in one outage.
+
+    config SWS_TZ_OFFSET_MIN
+        int "Local time offset from UTC for schedules (minutes)"
+        default 0
+        range -720 840
+        help
+            Ghana is UTC+0 with no daylight saving.
+
+endmenu

@@ -1,0 +1,27 @@
+# Builds
+build/
+firmware/app/build/
+firmware/app/sdkconfig
+firmware/app/sdkconfig.old
+firmware/app/managed_components/
+firmware/app/dependencies.lock
+firmware/test/host/build/
+
+# Credentials: never commit keys or device certificates
+certs/
+*.key
+*.csr
+*.crt
+*.pem
+fctry.bin
+fctry.csv
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Assistant config stays local
+CLAUDE.md
+.claude/
