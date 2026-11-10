@@ -23,7 +23,7 @@ sys.path.insert(0, HERE)
 import evt1_design as d  # noqa: E402
 
 OUT = os.path.normpath(os.path.join(HERE, "..", "evt1"))
-MAINS_FIXED = {"L_BUS", "N_IN", "E_IN", "N_F", "N_R", "L_OUT1", "L_OUT2", "+3V3_HOT"}
+MAINS_FIXED = {"L_BUS", "N_IN", "E_IN", "N_F", "N_R", "L_OUT1", "L_OUT2", "+3V3_HOT", "+5V_HOT"}
 BARRIER_PARTS = {"U5", "PS1", "K1", "K2"}
 
 errors, warnings = [], []

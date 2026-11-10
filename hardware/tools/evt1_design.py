@@ -45,6 +45,9 @@ FP = {
     "UMTH": "sws:Fuse_Schurter_UMT-H",
     "SMC": "Diode_SMD:D_SMC",
     "NETTIE": "NetTie:NetTie-2_SMD_Pad0.5mm",
+    "CP_D8": "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm",
+    "L_RAD": "Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP",
+    "LNKSO8C": "Package_SO:PowerIntegrations_SO-8C",
     "L4018": "Inductor_SMD:L_Bourns-SRN4018",
     "HDR2x7": "Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD",
     "SKT2x7": "Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD",
@@ -97,6 +100,9 @@ S_KP3310 = box("KP3310SGA", [
 ], [
     ("3", "VOUT", "power_out"), ("2", "GND", "power_in"),
 ], desc="Kiwi KP3310, non-isolated HV linear regulator, SOP-8")
+
+S_LNK = box("LNK3204D", [("4", "D", "passive"), ("1", "BP/M", "passive"), ("2", "FB", "input")],
+            [("5,6,7,8", "S", "passive")], desc="Power Integrations LinkSwitch-TN2, 725 V, SO-8C (pin 3 absent)")
 
 S_LMV393 = box("LMV393", [
     ("3", "+INA", "input"), ("2", "-INA", "input"), ("5", "+INB", "input"), ("6", "-INB", "input"),
@@ -258,19 +264,34 @@ feed = Block(
     ])
 
 hotsup = Block(
-    "3. Hot-side 3.3 V supply (KP3310SGA)",
-    "Half-wave from N_F; KP3310 charges VDD (7.8 V) while the line is low, then an LDO makes 3.3 V. SEL open = 3.3 V.\n"
-    "D7 clamps the drain below its 650 V rating in a surge; R2 limits the clamp current (value from the R1 simulation).\n"
-    "Hold-up: 15 mA (worst case) x 20 ms / 220 uF = 1.4 V droop on VDD (7.8 V to 6.4 V), so VOUT stays in regulation.",
+    "3. Hot-side supply (LNK3204 half-wave buck, 5 V, then 3.3 V)",
+    "Replaces the KP3310 (R1 study, hardware/sim/R1-study.md): half-wave charging through a surge resistor could not supply the 8-15 mA load.\n"
+    "High-side buck referenced to L_BUS. RF 47R + 2 x M7 + pi filter (2 x 4.7 uF 450 V, 1 mH): simulated bulk/drain peak 465 V at a 4 kV surge (switch rated 725 V).\n"
+    "Feedback: C25 samples Vout during freewheel; 2.00 V x (1 + 3.09k/2.49k) = 4.48 V + about 0.5 V diode offset = 5.0 V (trim R35 at bring-up).\n"
+    "BP/M = 1 uF selects the reduced current limit (enough for 20 mA, allows a small choke). D9 must be <= 35 ns trr (enclosure above 70 C).",
     [
-        R("R2", "100R 1W flameproof", "N_F", "H_KP_A", fp="R0207",
-          note="Limits surge current into D7. Value 100-220R set by simulation: higher protects D7, lower keeps KP3310 charging"),
-        D(S_D, "D1", "M7 1000V 1A", "H_KP_D", "H_KP_A", "SMA", lcsc="C95872", mpn="M7"),
-        U("U1", S_KP3310, "KP3310SGA", {"5": "H_KP_D", "4": "H_KP_VDD", "1": "NC", "3": "+3V3_HOT", "2": "L_BUS"},
-          "SOIC8", lcsc="C310447", mfr="Kiwi Instruments", ver="plan", note="SEL floating selects 3.3 V"),
-        D(S_TVS, "D7", "SMCJ400A", "H_KP_D", "L_BUS", "SMC", mpn="SMCJ400A", mfr="Littelfuse",
-          note="Drain clamp: VBR 447 V min, stays off at 275 V (389 V peak); keeps drain below 650 V if R2 limits current"),
-        CP("C1", "220u 16V 105C", "H_KP_VDD", "L_BUS", note="VDD energy store (VDD abs max 9 V)"),
+        R("R2", "47R 2W fusible wirewound", "N_F", "H_RF", fp="R0617",
+          note="Surge limiter and fuse for the LNK input; 270-390 mJ per 2-4 kV surge, choose a surge-rated type"),
+        D(S_D, "D1", "M7 1000V 1A", "H_DA", "H_RF", "SMA", lcsc="C95872", mpn="M7"),
+        D(S_D, "D8", "M7 1000V 1A", "H_BULK1", "H_DA", "SMA", lcsc="C95872", mpn="M7",
+          note="Two in series: a negative surge puts up to 1.7 kV across the string"),
+        CP("C1", "4.7u 450V 105C", "H_BULK1", "L_BUS", fp="CP_D8"),
+        Part("L1", S_L, "1mH 0.1A", {"1": "H_BULK1", "2": "H_BULK2"}, FP["L_RAD"], "", "", "", "Pi-filter choke"),
+        CP("C23", "4.7u 450V 105C", "H_BULK2", "L_BUS", fp="CP_D8"),
+        U("U1", S_LNK, "LNK3204D", {"4": "H_BULK2", "1": "H_BP", "2": "H_FB", "5": "H_SW"},
+          "LNKSO8C", mfr="Power Integrations", note="Pinout from the KiCad library symbol: BP/M 1, FB 2, D 4, S 5-8, no pin 3"),
+        C("C24", "1u 16V", "H_BP", "H_SW", note="BP/M: 1 uF = reduced current limit", **C1U),
+        Part("L2", S_L, "1mH 0.2A", {"1": "H_SW", "2": "+5V_HOT"}, FP["L_RAD"], "", "", "", "Buck choke"),
+        D(S_D, "D9", "ES1J 600V 35ns", "H_SW", "L_BUS", "SMA", mpn="ES1J", note="Freewheel, trr <= 35 ns"),
+        D(S_D, "D10", "M7 1000V 1A", "H_FBC", "+5V_HOT", "SMA", lcsc="C95872", mpn="M7",
+          note="Feedback sample diode, glass passivated"),
+        C("C25", "10u 25V", "H_FBC", "H_SW", **C10U_0805),
+        R("R35", "3.09k 1%", "H_FBC", "H_FB"),
+        R("R36", "2.49k 1%", "H_FB", "H_SW"),
+        CP("C26", "100u 16V 105C", "+5V_HOT", "L_BUS"),
+        R("R37", "2.4k", "+5V_HOT", "L_BUS", dnp=True, note="Preload, fit only if no-load regulation needs it"),
+        U("U7", S_XC6206, "XC6206P332MR", {"3": "+5V_HOT", "2": "+3V3_HOT", "1": "L_BUS"}, "SOT23", lcsc="C5446", mfr="Torex"),
+        C("C27", "1u", "+5V_HOT", "L_BUS", **C1U),
         C("C2", "10u 25V", "+3V3_HOT", "L_BUS", **C10U_0805),
         C("C3", "100n", "+3V3_HOT", "L_BUS", **C100N),
     ])
@@ -407,12 +428,12 @@ REAR = Project(
     warning="Hot side is referenced to LIVE (L_BUS). Treat every hot-side net as mains.",
     sheets=[
         Sheet("Hot side", "", "Mains referenced. Hot-side ground = L_BUS = LIVE.",
-              [mains, feed, hotsup], flags=["L_BUS"], tint=True),
+              [mains, feed, hotsup], flags=["L_BUS", "+5V_HOT"], tint=True),
         Sheet("Hot side, sensing", "", "Metering and wiring checks, all mains referenced.", [meter, polarity], tint=True),
         Sheet("Barrier crossing", "", "The only parts that bridge the barrier.", [iso, ld03, relays]),
         Sheet("Safe zone", "", "SELV.", [drivers, safe_misc]),
     ],
-    rails={"L_BUS": "hot", "GND": "gnd", "+3V3_HOT": "rail", "+3V3_ISO": "rail", "+5V": "rail"},
+    rails={"L_BUS": "hot", "GND": "gnd", "+3V3_HOT": "rail", "+5V_HOT": "rail", "+3V3_ISO": "rail", "+5V": "rail"},
     barrier_after=1,
     root_notes=(
         "REAR BOARD, EVT1 DRAFT FOR REVIEW\n"

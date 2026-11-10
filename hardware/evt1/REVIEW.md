@@ -1,6 +1,17 @@
 # EVT1 schematic: review notes
 
-Draft C, 10 Nov 2026. For Daniel's engineering review before layout starts.
+Draft D, 10 Nov 2026. For Daniel's engineering review before layout starts.
+
+## What changed in draft D
+
+The hot-side supply is now an LNK3204D half-wave buck, which closes R1 (Daniel's decision, 10 Nov 2026). The R1 study (`hardware/sim/R1-study.md`) showed the KP3310 could not both survive a surge and supply the hot side.
+
+- **Input:** R2 47 Ω 2 W fusible → D1 + D8 (two M7 in series) → π-filter of C1/C23 (4.7 µF 450 V) with L1 (1 mH).
+- **Buck:** U1 LNK3204D. BP/M set to 1 µF (reduced current limit). L2 1 mH. D9 ES1J freewheel diode, 35 ns.
+- **Feedback:** sampled through D10/C25 and set by R35/R36 for 5.0 V. Trim R35 at bring-up.
+- **3.3 V:** U7 XC6206 from +5V_HOT. R37 is an unfitted preload.
+- **Removed:** the KP3310 and D7 (SMCJ400A).
+- **Simulated:** the switch peaks at 465 V for a 4 kV surge, against a 725 V rating. Estimated hot-side standby is about 0.1 W.
 
 ## What changed in draft C
 
@@ -18,7 +29,7 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 | Board | Sheet layout | Parts | Nets |
 |---|---|---|---|
-| Rear (`sws-rear`) | One sheet: hot side, hot-side sensing, barrier crossing, safe zone | 86 (+ 4 net ties) | 63 |
+| Rear (`sws-rear`) | One sheet: hot side, hot-side sensing, barrier crossing, safe zone | 99 (+ 4 net ties) | 69 |
 | Front (`sws-front`) | One sheet: power and processor, user interface | 67 | 45 |
 
 `verify.py` passes with 0 errors: the KiCad netlist matches the design data, and the safety rules in `hardware/README.md` hold.
@@ -55,12 +66,11 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 ## Open items before layout
 
-**R1. Hot-side supply. Simulated; decision needed.** Full study in `hardware/sim/R1-study.md`.
+**R1. Hot-side supply. Closed in draft D** with the LNK3204D buck; the study is in `hardware/sim/R1-study.md`. Left to confirm:
 
-- The KP3310 can't do both jobs here. Surviving a 2 kV surge needs R2 ≥ 150 Ω with a 5 kW TVS. At that R2, half-wave charging delivers at most 5.7–8.5 mA, against 8–15 mA needed.
-- On negative surges, D1 sees up to 1.33 kV in reverse, more than one M7's 1000 V rating.
-- Recommendation: replace the KP3310, D7 and R2 with an LNK3204D half-wave buck: RF 47 Ω fusible, 2 × M7, π-filter 2 × 4.7 µF / 450 V + 1 mH, 5 V out, then a 3.3 V LDO. Simulated drain peak: 465 V at 4 kV, against a 725 V rating. Estimated standby about 0.1 W.
-- Draft C still shows the KP3310. The schematic changes once Daniel decides.
+- the surge level that applies, with the test lab;
+- the MOV's V–I curve at 1 kA;
+- conducted emissions of the buck (CISPR 14-1) at pre-compliance.
 
 **R2. Relay footprints.** The relay symbol's pin numbers (1 A1, 2 A2, 3 COM, 4 NO) are placeholders. Draw the G5RL-1A-E footprint from Omron's drawing, then confirm the HF115F/005-1HS3AF lands on it (D2).
 
@@ -82,7 +92,7 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 - touch electrode
 - NFC loop antenna
 
-**R7. LCSC numbers still to assign: 41 parts (33 rear, 8 front).** F1 (Schurter UMT-H) and D7 come from Schurter and Littelfuse distributors.
+**R7. LCSC numbers still to assign: 48 parts (40 rear, 8 front).** Includes the new LNK3204D, ES1J, chokes and 450 V capacitors. F1 (Schurter UMT-H) comes from Schurter distributors.
 
 - Parts that need choosing first: shunts, fuse, MOV, wirewound and flameproof resistors, electrolytics, HV resistors (Vishay VR37 is not on LCSC), NTCs, B2B connectors, inductor.
 - 1 % resistor values outside JLC's basic list.
