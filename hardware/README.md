@@ -11,6 +11,7 @@ EVT1 schematics for the Smart Wall Socket. **Draft for engineering review, not a
 | `tools/evt1_design.py` | The design as data: parts, values, nets |
 | `tools/layout.py` | Places each block in its frame and draws the wires with a small grid router |
 | `tools/gen.py` | Writes the KiCad files; PDFs come from `kicad-cli` |
+| `tools/footprints.py` | Writes the drawn footprints into `evt1/lib/sws.pretty` (see its README for sources) |
 | `tools/kicad-theme-paper.json` | Paper colour theme used for the PDFs |
 | `tools/verify.py` | Checks the exported netlist against the design and runs the safety rules |
 
@@ -19,6 +20,7 @@ Each project folder also holds the schematic PDF, the KiCad netlist and two BOMs
 ## Regenerate
 
 ```sh
+python3 hardware/tools/footprints.py
 python3 hardware/tools/gen.py
 python3 hardware/tools/verify.py      # must print "0 errors"
 mkdir -p ~/.config/kicad/7.0/colors && cp hardware/tools/kicad-theme-paper.json ~/.config/kicad/7.0/colors/paper.json

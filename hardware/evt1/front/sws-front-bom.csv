@@ -1,39 +1,39 @@
 Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
-1,ANT101,PCB loop antenna,,,to assign,,sws:NFC_Antenna_PCB_25x15,yes,
+1,ANT101,PCB loop antenna,,,n/a,"PCB feature, not a bought part",sws:NFC_Antenna_PCB_25x15,yes,
 3,C101 C104 C105,22u 10V,,,C45783,"JLC basic, confirm at order",Capacitor_SMD:C_0805_2012Metric,yes,
 3,C102 C106 C118,10u 10V,,,C15850,"JLC basic, confirm at order",Capacitor_SMD:C_0805_2012Metric,yes,
 1,C103,22p,,,C1653,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,DNP,"Feed-forward, fit only if needed"
 11,C107 C109 C110 C112 C114 C116 C117 C119 C120 C121 C122,100n,,,C14663,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
 1,C108,1u,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,"EN RC per Espressif (10k, 1uF)"
-2,C111 C113,10n C0G,,,to assign,,Capacitor_SMD:C_0603_1608Metric,yes,"Cs, tune at EVT"
-1,C115,TBD C0G,,,to assign,,Capacitor_SMD:C_0603_1608Metric,DNP,"Tuning, value from antenna measurement"
+2,C111 C113,10n C0G,C1608C0G1H103JT000N,TDK,C76599,"yes, 10 Nov 2026",Capacitor_SMD:C_0603_1608Metric,yes,"Cs, tune at EVT"
+1,C115,TBD C0G,,,n/a,"DNP, value from antenna tuning",Capacitor_SMD:C_0603_1608Metric,DNP,"Tuning, value from antenna measurement"
 4,D101 D102 D103 D104,SK6812MINI-E,SK6812MINI-E,OPSCO,C5149201,"yes, 10 Nov 2026",sws:LED_SK6812MINI-E_Reverse,yes,Outlet 1 line; Outlet 2 line
-1,E101,Touch key 1,,,to assign,,sws:TouchPad_12mm,yes,
-1,E102,Touch key 2,,,to assign,,sws:TouchPad_12mm,yes,
-1,J101,B2B socket 2x7 1.27mm,B2B socket 2x7 1.27mm,,to assign,,Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD,yes,
-1,L101,2.2uH 2A shielded,,,to assign,,Inductor_SMD:L_Bourns-SRN4018,yes,"Isat >= 2.5 A, DCR <= 60 mOhm"
+1,E101,Touch key 1,,,n/a,"PCB feature, not a bought part",sws:TouchPad_12mm,yes,
+1,E102,Touch key 2,,,n/a,"PCB feature, not a bought part",sws:TouchPad_12mm,yes,
+1,J101,B2B socket 2x7 1.27mm,PM127-2-07-S-4.3,HCTL,C3975133,"yes, 10 Nov 2026",Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD,yes,
+1,L101,2.2uH 1.65A 45mR shielded,YNR4018-2R2M,YJYCOIN,C340367,"yes, 10 Nov 2026",Inductor_SMD:L_Bourns-SRN4018,yes,"Isat >= 2.5 A, DCR <= 60 mOhm"
 1,Q101,AO3401A,AO3401A,AOS,C15127,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,
 1,Q102,2N7002,2N7002,,C8545,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,
-1,R101,453k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+1,R101,453k 1%,TD03G4533FT,FH,C667826,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
 1,R102,100k 1%,,,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 4,R103 R104 R105 R116,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,IO8 strap high
-2,R106 R107,10k 0.1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+2,R106 R107,10k 0.1%,PTFR0603B10K0P9,RESI,C328421,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
 4,R108 R111 R114 R115,4.7k,,,C23162,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-2,R109 R112,0R,,,C21189,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-2,R110 R113,0R,,,C21189,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,DNP,
-1,R117,33R,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+2,R109 R112,0R,,,C21189,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,DNP,
+2,R110 R113,0R,,,C21189,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
+1,R117,33R,0603WAF330JT5E,UNI-ROYAL,C23140,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
 2,R118 R119,100k,,,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-1,TP101,+5V,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP102,+3V3,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP103,GND,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP104,EN,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP105,BOOT,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP106,U0TXD,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP107,U0RXD,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP108,USB_D+,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
-1,TP109,USB_D-,,,to assign,,TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP101,+5V,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP102,+3V3,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP103,GND,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP104,EN,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP105,BOOT,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP106,U0TXD,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP107,U0RXD,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP108,USB_D+,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
+1,TP109,USB_D-,,,n/a,"PCB feature, not a bought part",TestPoint:TestPoint_Pad_D1.5mm,yes,
 1,U101,TLV62569DBVR,TLV62569DBVR,TI,C141836,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23-5,yes,
 1,U102,ESP32-C6-MINI-1-H4,ESP32-C6-MINI-1-H4,Espressif,C6553337,"in EVT plan, reconfirm",sws:ESP32-C6-MINI-1,yes,
 2,U103 U104,AT42QT1011-TSHR,AT42QT1011-TSHR,Microchip,C112956,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23-6,yes,
-1,U105,NT3H2111W0FTTJ,NT3H2111W0FTTJ,NXP,C2654884,"yes, 10 Nov 2026",Package_SO:TSSOP-8_3x3mm_P0.65mm,yes,Pinout from LCSC/Flux listing; check against NXP datasheet
+1,U105,NT3H2111W0FTTJ,NT3H2111W0FTTJ,NXP,C2654884,"yes, 10 Nov 2026",Package_SO:TSSOP-8_3x3mm_P0.65mm,yes,Pinout checked against NXP NT3H2111_2211 datasheet (TSSOP8)
 1,U106,SN74AHCT1G125DBVR,SN74AHCT1G125DBVR,TI,C7484,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23-5,yes,

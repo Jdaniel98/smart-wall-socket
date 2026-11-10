@@ -30,6 +30,7 @@ FP = {
     "C0603": "Capacitor_SMD:C_0603_1608Metric",
     "C0805": "Capacitor_SMD:C_0805_2012Metric",
     "CP6.3": "Capacitor_SMD:CP_Elec_6.3x7.7",
+    "CP6358": "Capacitor_SMD:CP_Elec_6.3x5.8",
     "SOT23": "Package_TO_SOT_SMD:SOT-23",
     "SOT23-5": "Package_TO_SOT_SMD:SOT-23-5",
     "SOT23-6": "Package_TO_SOT_SMD:SOT-23-6",
@@ -103,7 +104,7 @@ S_KP3310 = box("KP3310SGA", [
 ], desc="Kiwi KP3310, non-isolated HV linear regulator, SOP-8")
 
 S_LNK = box("LNK3204D", [("4", "D", "passive"), ("1", "BP/M", "passive"), ("2", "FB", "input")],
-            [("5,6,7,8", "S", "passive")], desc="Power Integrations LinkSwitch-TN2, 725 V, SO-8C (pin 3 absent)")
+            [("5,6,7,8", "S", "passive")], desc="Power Integrations LinkSwitch-TN2, 725 V, SO-8C: 1 BP/M, 2 FB, 4 D, 5-8 S, pin 3 absent (checked)")
 
 S_LMV393 = box("LMV393", [
     ("3", "+INA", "input"), ("2", "-INA", "input"), ("5", "+INB", "input"), ("6", "-INB", "input"),
@@ -127,9 +128,9 @@ S_LD03 = box("LD03-23B05R2", [("2", "AC(L)", "passive"), ("1", "AC(N)", "passive
              [("5", "+Vo", "power_out"), ("4", "-Vo", "power_out")],
              desc="Mornsun 3 W AC-DC module, 5 V / 600 mA, 4 kVAC reinforced")
 
-S_RELAY = box("Relay_SPST_NO", [("1", "A1", "passive"), ("2", "A2", "passive")],
-              [("3", "COM", "passive"), ("4", "NO", "passive")], ref="K",
-              desc="16 A SPST-NO power relay. Pin numbers are placeholders until the footprint is drawn.")
+S_RELAY = box("Relay_SPST_NO", [("1", "A1", "passive"), ("8", "A2", "passive")],
+              [("3,6", "COM", "passive"), ("4,5", "NO", "passive")], ref="K",
+              desc="16 A SPST-NO power relay, Omron G5RL-1A-E pinning: coil 1/8, COM 3+6, NO 4+5 (doubled for 16 A)")
 
 S_TERM = box("Mains_Terminal", [], [("1", "L", "passive"), ("2", "N", "passive"), ("3", "E", "passive")], ref="J",
              desc="Mains screw terminals, 3 x 2.5 mm2")
@@ -389,9 +390,9 @@ relays = Block(
     "8. Outlet relays, coil on the safe side, contacts on the hot side",
     "Live-only switching (ADR-0002). 8 mm between coil and contact pins with a routed slot. Coil 5 V, 80 mA pull-in.",
     [
-        U("K1", S_RELAY, "G5RL-1A-E DC5", {"1": "+5V", "2": "RLY1_COIL", "3": "H_K1", "4": "L_OUT1"}, "RELAY",
-          lcsc="C397237", mfr="Omron", ver="plan", note="Second source Hongfa HF115F/005-1HS3AF (C882368), pin map to confirm"),
-        U("K2", S_RELAY, "G5RL-1A-E DC5", {"1": "+5V", "2": "RLY2_COIL", "3": "H_K2", "4": "L_OUT2"}, "RELAY",
+        U("K1", S_RELAY, "G5RL-1A-E DC5", {"1": "+5V", "8": "RLY1_COIL", "3": "H_K1", "4": "L_OUT1"}, "RELAY",
+          lcsc="C397237", mfr="Omron", ver="plan", note="Second source Hongfa HF115F/005-1HS3AF (C882368); footprint holes widened for its 2.52 mm grid"),
+        U("K2", S_RELAY, "G5RL-1A-E DC5", {"1": "+5V", "8": "RLY2_COIL", "3": "H_K2", "4": "L_OUT2"}, "RELAY",
           lcsc="C397237", mfr="Omron", ver="plan"),
     ])
 
@@ -506,23 +507,23 @@ front_tp = Block(
 touch = Block(
     "4. Touch keys (AT42QT1011), one per outlet",
     "Cs 10 nF and Rs 4.7k are starting values; tune on the EVT faceplate. OUT is active high: board_evt_c6 sets touch polarity.\n"
-    "SYNC/MODE strapped low by a 0R (fit the other 0R to strap high if the datasheet mode table calls for it).",
+    "SYNC/MODE strapped high by a 0R: Fast mode (~1 ms between bursts). Low-power mode (strap low) sleeps ~80 ms per burst and feels slow.",
     [
         U("U103", S_QT, "AT42QT1011-TSHR", {"4": "TS1_S", "3": "TS1_K", "5": "+3V3", "2": "GND", "1": "TOUCH1", "6": "TS1_MODE"},
           "SOT23-6", lcsc="C112956", mfr="Microchip", ver="yes"),
         C("C111", "10n C0G", "TS1_K", "TS1_S", note="Cs, tune at EVT"),
         R("R108", "4.7k", "TS1_K", "TS1_E", **R4K7),
         Part("E101", S_E, "Touch key 1", {"1": "TS1_E"}, FP["TOUCH"]),
-        R("R109", "0R", "TS1_MODE", "GND", **R0),
-        R("R110", "0R", "TS1_MODE", "+3V3", dnp=True, **R0),
+        R("R109", "0R", "TS1_MODE", "GND", dnp=True, **R0),
+        R("R110", "0R", "TS1_MODE", "+3V3", **R0),
         C("C112", "100n", "+3V3", "GND", **C100N),
         U("U104", S_QT, "AT42QT1011-TSHR", {"4": "TS2_S", "3": "TS2_K", "5": "+3V3", "2": "GND", "1": "TOUCH2", "6": "TS2_MODE"},
           "SOT23-6", lcsc="C112956", mfr="Microchip", ver="yes"),
         C("C113", "10n C0G", "TS2_K", "TS2_S", note="Cs, tune at EVT"),
         R("R111", "4.7k", "TS2_K", "TS2_E", **R4K7),
         Part("E102", S_E, "Touch key 2", {"1": "TS2_E"}, FP["TOUCH"]),
-        R("R112", "0R", "TS2_MODE", "GND", **R0),
-        R("R113", "0R", "TS2_MODE", "+3V3", dnp=True, **R0),
+        R("R112", "0R", "TS2_MODE", "GND", dnp=True, **R0),
+        R("R113", "0R", "TS2_MODE", "+3V3", **R0),
         C("C114", "100n", "+3V3", "GND", **C100N),
     ])
 
@@ -532,7 +533,7 @@ nfc = Block(
     [
         U("U105", S_NFC, "NT3H2111W0FTTJ", {"1": "NFC_LA", "8": "NFC_LB", "6": "+3V3", "2": "GND", "3": "NFC_SCL",
                                             "5": "NFC_SDA", "4": "NFC_FD", "7": "NC"},
-          "TSSOP8", lcsc="C2654884", mfr="NXP", ver="yes", note="Pinout from LCSC/Flux listing; check against NXP datasheet"),
+          "TSSOP8", lcsc="C2654884", mfr="NXP", ver="yes", note="Pinout checked against NXP NT3H2111_2211 datasheet (TSSOP8)"),
         Part("ANT101", S_ANT, "PCB loop antenna", {"1": "NFC_LA", "2": "NFC_LB"}, FP["NFCANT"]),
         C("C115", "TBD C0G", "NFC_LA", "NFC_LB", dnp=True, note="Tuning, value from antenna measurement"),
         R("R114", "4.7k", "+3V3", "NFC_SDA", **R4K7),
@@ -595,3 +596,100 @@ GPIO_MAP = {
 ESP_PAD_TO_GPIO = {"12": 0, "13": 1, "5": 2, "6": 3, "9": 4, "10": 5, "15": 6, "16": 7, "22": 8, "23": 9,
                    "17": 12, "18": 13, "19": 14, "20": 15, "24": 18, "25": 19, "26": 20, "27": 21,
                    "28": 22, "29": 23}
+
+
+# --------------------------------------------------------------------------
+# Part numbers assigned 10 Nov 2026 (R7). Each LCSC/JLC page was checked that day.
+# ref: (lcsc, mpn, mfr, new value or None, new footprint key or None, ver)
+# ver "yes" = LCSC page checked; "src:..." = sourced elsewhere or not a bought part.
+# --------------------------------------------------------------------------
+ASSIGN = {
+    # rear, hot side
+    "RS1": ("C4175647", "CSS2H-2512R-1L00F", "Bourns", "1m 1% 5W metal element", None, "yes"),
+    "RS2": ("C4175647", "CSS2H-2512R-1L00F", "Bourns", "1m 1% 5W metal element", None, "yes"),
+    "RV1": ("C3263770", "MOV-10D561K", "Bourns", "MOV 561K 10mm", None,
+            "src:EVT uses plain MOV; thermally protected 10 mm type (Littelfuse TMOV / SETsafe SFV) to source for DVT"),
+    "R1":  ("", "KNP3W-12R-5%", "CCO", None, None, "src:LCSC number to pick at order (KNP3W 12R)"),
+    "R2":  ("", "FW20A47R0JA", "Bourns", "47R 2W fusible wirewound", None, "src:DigiKey/Mouser; certified fusible, no LCSC equivalent"),
+    "C1":  ("C22391567", "LKGD1402W4R7MF", "Ymin", "4.7u 450V 105C 12000h", None, "yes"),
+    "C23": ("C22391567", "LKGD1402W4R7MF", "Ymin", "4.7u 450V 105C 12000h", None, "yes"),
+    "L1":  ("C72626", "VLU0810-102K", "FH", "1mH 0.36A", None, "yes"),
+    "L2":  ("C72626", "VLU0810-102K", "FH", "1mH 0.36A", None, "yes"),
+    "U1":  ("", "LNK3204D-TL", "Power Integrations", None, None, "src:DigiKey 596-LNK3204D-TLCT-ND (not on LCSC)"),
+    "D9":  ("C412438", "ES1J", "MDD", None, None, "yes"),
+    "R35": ("C843947", "CRCW06033K09FKEA", "Vishay", None, None, "yes"),
+    "R36": ("C407609", "0603WAD2491T5E", "UNI-ROYAL", "2.49k 0.5%", None, "yes"),
+    "C26": ("C128532", "EEE-FK1C101P", "Panasonic", "100u 16V 105C", "CP6358", "yes"),
+    "R37": ("", "", "", None, None, "src:DNP"),
+    "C6":  ("C21117", "CL10B333KB8NNNC", "Samsung", "33n X7R", None, "yes"),
+    "C7":  ("C21117", "CL10B333KB8NNNC", "Samsung", "33n X7R", None, "yes"),
+    "C8":  ("C21117", "CL10B333KB8NNNC", "Samsung", "33n X7R", None, "yes"),
+    "C9":  ("C21117", "CL10B333KB8NNNC", "Samsung", "33n X7R", None, "yes"),
+    "C10": ("C21117", "CL10B333KB8NNNC", "Samsung", "33n X7R", None, "yes"),
+    "R7":  ("C307946", "KTR18EZPF3903", "ROHM", "390k 1% 1206 500V", None, "yes"),
+    "R8":  ("C307946", "KTR18EZPF3903", "ROHM", "390k 1% 1206 500V", None, "yes"),
+    "R9":  ("C307946", "KTR18EZPF3903", "ROHM", "390k 1% 1206 500V", None, "yes"),
+    "R10": ("C307946", "KTR18EZPF3903", "ROHM", "390k 1% 1206 500V", None, "yes"),
+    "R11": ("C307946", "KTR18EZPF3903", "ROHM", "390k 1% 1206 500V", None, "yes"),
+    "R12": ("C23179", "0603WAF4700T5E", "UNI-ROYAL", "470R 1%", None, "yes"),
+    "R15": ("", "VR37000002004FA100", "Vishay", None, None, "src:DigiKey/Mouser (VR37 not on LCSC)"),
+    "R16": ("", "VR37000002004FA100", "Vishay", None, None, "src:DigiKey/Mouser (VR37 not on LCSC)"),
+    "R18": ("", "VR37000002004FA100", "Vishay", None, None, "src:DigiKey/Mouser (VR37 not on LCSC)"),
+    "R19": ("", "VR37000002004FA100", "Vishay", None, None, "src:DigiKey/Mouser (VR37 not on LCSC)"),
+    "R17": ("C25819", "0603WAF4702T5E", "UNI-ROYAL", None, None, "yes"),
+    "R20": ("C25819", "0603WAF4702T5E", "UNI-ROYAL", None, None, "yes"),
+    "D2":  ("C2117", "BZT52C5V1", "CJ", None, None, "yes"),
+    "R21": ("C23178", "0603WAF4703T5E", "UNI-ROYAL", "470k 1%", None, "yes"),
+    "R22": ("C22894", "0603WAF1823T5E", "UNI-ROYAL", None, None, "yes"),
+    "R23": ("C25803", "0603WAF1003T5E", "UNI-ROYAL", None, None, ""),
+    "R24": ("C23184", "0603WAF4992T5E", "UNI-ROYAL", None, None, "yes"),
+    "PS1": ("", "LD03-23B05R2", "Mornsun", None, None, "src:Mornsun distributor or DigiKey 2725-LD03-23B05R2-ND (D4)"),
+    "F1":  ("", "3403.0274.23", "Schurter", None, None, "src:Schurter distributor"),
+    "C18": ("C116352", "CL21B105KAFNNNE", "Samsung", None, None, "yes"),
+    "C19": ("C264054", "EEE-FK1A151P", "Panasonic", "150u 10V 105C low ESR", "CP6358", "yes"),
+    "TH1": ("C47118797", "CMFA103F3950HANT", "FH", None, None, "yes"),
+    "TH2": ("C47118797", "CMFA103F3950HANT", "FH", None, None, "yes"),
+    "J4":  ("C3975190", "PZ127-2-07-S", "HCTL", None, None, "yes"),
+    "J1":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
+    "J2":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
+    "J3":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
+    "TF1": ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
+    "TF2": ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
+    # front
+    "J101": ("C3975133", "PM127-2-07-S-4.3", "HCTL", None, None, "yes"),
+    "L101": ("C340367", "YNR4018-2R2M", "YJYCOIN", "2.2uH 1.65A 45mR shielded", None, "yes"),
+    "R101": ("C667826", "TD03G4533FT", "FH", None, None, "yes"),
+    "R106": ("C328421", "PTFR0603B10K0P9", "RESI", None, None, "yes"),
+    "R107": ("C328421", "PTFR0603B10K0P9", "RESI", None, None, "yes"),
+    "C111": ("C76599", "C1608C0G1H103JT000N", "TDK", None, None, "yes"),
+    "C113": ("C76599", "C1608C0G1H103JT000N", "TDK", None, None, "yes"),
+    "R117": ("C23140", "0603WAF330JT5E", "UNI-ROYAL", None, None, "yes"),
+    "C115": ("", "", "", None, None, "src:DNP, value from antenna tuning"),
+}
+for _ref in [f"TP10{i}" for i in range(1, 10)] + ["E101", "E102", "ANT101"]:
+    ASSIGN[_ref] = ("", "", "", None, None, "src:PCB feature, not a bought part")
+
+
+def _apply_assignments():
+    seen = set()
+    for proj in (REAR, FRONT):
+        for sh in proj.sheets:
+            for b in sh.blocks:
+                for p in b.parts:
+                    a = ASSIGN.get(p.ref)
+                    if not a:
+                        continue
+                    lcsc, mpn, mfr, val, fp, ver = a
+                    p.lcsc = lcsc or p.lcsc
+                    p.mpn, p.mfr = mpn or p.mpn, mfr or p.mfr
+                    if val:
+                        p.value = val
+                    if fp:
+                        p.footprint = FP[fp]
+                    p.verified = ver
+                    seen.add(p.ref)
+    missing = set(ASSIGN) - seen
+    assert not missing, f"ASSIGN refs not in design: {sorted(missing)}"
+
+
+_apply_assignments()

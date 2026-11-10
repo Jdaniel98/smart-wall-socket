@@ -1,51 +1,50 @@
 Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
-2,C1 C23,4.7u 450V 105C,,,to assign,,Capacitor_THT:CP_Radial_D8.0mm_P3.50mm,yes,
+2,C1 C23,4.7u 450V 105C 12000h,LKGD1402W4R7MF,Ymin,C22391567,"yes, 10 Nov 2026",Capacitor_THT:CP_Radial_D8.0mm_P3.50mm,yes,
 4,C2 C5 C22 C25,10u 25V,,,C15850,"JLC basic, confirm at order",Capacitor_SMD:C_0805_2012Metric,yes,
 6,C3 C4 C11 C13 C14 C16,100n,,,C14663,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
-5,C6 C7 C8 C9 C10,33n C0G/X7R,,,to assign,,Capacitor_SMD:C_0603_1608Metric,yes,
+5,C6 C7 C8 C9 C10,33n X7R,CL10B333KB8NNNC,Samsung,C21117,"yes, 10 Nov 2026",Capacitor_SMD:C_0603_1608Metric,yes,
 5,C15 C17 C20 C21 C27,1u,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,
-1,C18,1u 25V,,,to assign,,Capacitor_SMD:C_0805_2012Metric,yes,
-1,C19,150u 10V 105C,,,to assign,,Capacitor_SMD:CP_Elec_6.3x7.7,yes,
+1,C18,1u 25V,CL21B105KAFNNNE,Samsung,C116352,"yes, 10 Nov 2026",Capacitor_SMD:C_0805_2012Metric,yes,
+1,C19,150u 10V 105C low ESR,EEE-FK1A151P,Panasonic,C264054,"yes, 10 Nov 2026",Capacitor_SMD:CP_Elec_6.3x5.8,yes,
 1,C24,1u 16V,,,C15849,"JLC basic, confirm at order",Capacitor_SMD:C_0603_1608Metric,yes,BP/M: 1 uF = reduced current limit
-1,C26,100u 16V 105C,,,to assign,,Capacitor_SMD:CP_Elec_6.3x7.7,yes,
+1,C26,100u 16V 105C,EEE-FK1C101P,Panasonic,C128532,"yes, 10 Nov 2026",Capacitor_SMD:CP_Elec_6.3x5.8,yes,
 3,D1 D8 D10,M7 1000V 1A,M7,,C95872,"JLC basic, confirm at order",Diode_SMD:D_SMA,yes,"Feedback sample diode, glass passivated; Two in series: a negative surge puts up to 1.7 kV across the string"
-1,D2,BZT52C5V1,BZT52C5V1,,to assign,,Diode_SMD:D_SOD-123,yes,Clamps the sense node in a surge
+1,D2,BZT52C5V1,BZT52C5V1,CJ,C2117,"yes, 10 Nov 2026",Diode_SMD:D_SOD-123,yes,Clamps the sense node in a surge
 1,D3,BAS116,"BAS116,215",Nexperia,C48502,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23,yes,Low leakage (5 nA max): keeps the negative half-wave off the comparator inputs
 1,D4,SMBJ7.0A,SMBJ7.0A-TP,MCC,C669050,"yes, 10 Nov 2026",Diode_SMD:D_SMB,yes,
 2,D5 D6,SS14,SS14,,C2480,"JLC basic, confirm at order",Diode_SMD:D_SMA,yes,Freewheel; carries coil current during PWM
-1,D9,ES1J 600V 35ns,ES1J,,to assign,,Diode_SMD:D_SMA,yes,"Freewheel, trr <= 35 ns"
-1,F1,1A T 277VAC 1500A HBC,3403.0274.23,Schurter,to assign,,sws:Fuse_Schurter_UMT-H,yes,"UMT-H, breaking capacity 1500 A. Must clear a shorted MOV at household fault current; a 1 A TE5 breaks only 25 A"
-1,J1,Mains terminal L/N/E,Mains terminal L/N/E,,to assign,,sws:Mains_Terminal_3x2.5mm2,yes,Screw terminals for 3 x 2.5 mm2 ring conductors; part chosen with the mechanism
-1,J2,Outlet 1 contacts,Outlet 1 contacts,,to assign,,sws:BS1363_Outlet_Contacts,yes,
-1,J3,Outlet 2 contacts,Outlet 2 contacts,,to assign,,sws:BS1363_Outlet_Contacts,yes,
-1,J4,B2B header 2x7 1.27mm,B2B header 2x7 1.27mm,,to assign,,Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD,yes,
-2,K1 K2,G5RL-1A-E DC5,G5RL-1A-E DC5,Omron,C397237,"in EVT plan, reconfirm",sws:Relay_Omron_G5RL-1A-E,yes,"Second source Hongfa HF115F/005-1HS3AF (C882368), pin map to confirm"
-1,L1,1mH 0.1A,,,to assign,,Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP,yes,Pi-filter choke
-1,L2,1mH 0.2A,,,to assign,,Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP,yes,Buck choke
-1,PS1,LD03-23B05R2,LD03-23B05R2,Mornsun,to assign,,sws:Mornsun_LD03-23B,yes,Buy from Mornsun distributors or DigiKey 2725-LD03-23B05R2-ND; not LCSC third-party
+1,D9,ES1J 600V 35ns,ES1J,MDD,C412438,"yes, 10 Nov 2026",Diode_SMD:D_SMA,yes,"Freewheel, trr <= 35 ns"
+1,F1,1A T 277VAC 1500A HBC,3403.0274.23,Schurter,n/a,Schurter distributor,sws:Fuse_Schurter_UMT-H,yes,"UMT-H, breaking capacity 1500 A. Must clear a shorted MOV at household fault current; a 1 A TE5 breaks only 25 A"
+1,J1,Mains terminal L/N/E,Mains terminal L/N/E,,n/a,"mechanical, chosen with the enclosure",sws:Mains_Terminal_3x2.5mm2,yes,Screw terminals for 3 x 2.5 mm2 ring conductors; part chosen with the mechanism
+1,J2,Outlet 1 contacts,Outlet 1 contacts,,n/a,"mechanical, chosen with the enclosure",sws:BS1363_Outlet_Contacts,yes,
+1,J3,Outlet 2 contacts,Outlet 2 contacts,,n/a,"mechanical, chosen with the enclosure",sws:BS1363_Outlet_Contacts,yes,
+1,J4,B2B header 2x7 1.27mm,PZ127-2-07-S,HCTL,C3975190,"yes, 10 Nov 2026",Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD,yes,
+2,K1 K2,G5RL-1A-E DC5,G5RL-1A-E DC5,Omron,C397237,"in EVT plan, reconfirm",sws:Relay_Omron_G5RL-1A-E,yes,Second source Hongfa HF115F/005-1HS3AF (C882368); footprint holes widened for its 2.52 mm grid
+2,L1 L2,1mH 0.36A,VLU0810-102K,FH,C72626,"yes, 10 Nov 2026",Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP,yes,Buck choke; Pi-filter choke
+1,PS1,LD03-23B05R2,LD03-23B05R2,Mornsun,n/a,Mornsun distributor or DigiKey 2725-LD03-23B05R2-ND (D4),sws:Mornsun_LD03-23B,yes,Buy from Mornsun distributors or DigiKey 2725-LD03-23B05R2-ND; not LCSC third-party
 2,Q1 Q2,AO3400A,AO3400A,AOS,C20917,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,
-1,R1,12R 3W wirewound,,,to assign,,Resistor_THT:R_Axial_DIN0617_L17.0mm_D6.0mm_P20.32mm_Horizontal,yes,Inrush limit for LD03; fusible type
-1,R2,47R 2W fusible wirewound,,,to assign,,Resistor_THT:R_Axial_DIN0617_L17.0mm_D6.0mm_P20.32mm_Horizontal,yes,"Surge limiter and fuse for the LNK input; 270-390 mJ per 2-4 kV surge, choose a surge-rated type"
+1,R1,12R 3W wirewound,KNP3W-12R-5%,CCO,n/a,LCSC number to pick at order (KNP3W 12R),Resistor_THT:R_Axial_DIN0617_L17.0mm_D6.0mm_P20.32mm_Horizontal,yes,Inrush limit for LD03; fusible type
+1,R2,47R 2W fusible wirewound,FW20A47R0JA,Bourns,n/a,"DigiKey/Mouser; certified fusible, no LCSC equivalent",Resistor_THT:R_Axial_DIN0617_L17.0mm_D6.0mm_P20.32mm_Horizontal,yes,"Surge limiter and fuse for the LNK input; 270-390 mJ per 2-4 kV surge, choose a surge-rated type"
 5,R3 R4 R5 R6 R13,1k,,,C21190,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-5,R7 R8 R9 R10 R11,390k 1% 1206,,,to assign,,Resistor_SMD:R_1206_3216Metric,yes,
-1,R12,470R 0.5%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+5,R7 R8 R9 R10 R11,390k 1% 1206 500V,KTR18EZPF3903,ROHM,C307946,"yes, 10 Nov 2026",Resistor_SMD:R_1206_3216Metric,yes,
+1,R12,470R 1%,0603WAF4700T5E,UNI-ROYAL,C23179,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
 5,R14 R25 R26 R31 R32,10k,,,C25804,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,Input current limit; TX/SDO needs an external pull-up
-4,R15 R16 R18 R19,2M VR37 3.5kV,VR37000002004FA100,Vishay,to assign,,Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal,yes,
-2,R17 R20,47k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,Equal to R17 so a floating earth sits at mid-supply
-1,R21,470k,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R22,182k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R23,100k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R24,49.9k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
+4,R15 R16 R18 R19,2M VR37 3.5kV,VR37000002004FA100,Vishay,n/a,DigiKey/Mouser (VR37 not on LCSC),Resistor_THT:R_Axial_DIN0411_L9.9mm_D3.6mm_P12.70mm_Horizontal,yes,
+2,R17 R20,47k 1%,0603WAF4702T5E,UNI-ROYAL,C25819,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,Equal to R17 so a floating earth sits at mid-supply
+1,R21,470k 1%,0603WAF4703T5E,UNI-ROYAL,C23178,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
+1,R22,182k 1%,0603WAF1823T5E,UNI-ROYAL,C22894,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
+1,R23,100k 1%,0603WAF1003T5E,UNI-ROYAL,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
+1,R24,49.9k 1%,0603WAF4992T5E,UNI-ROYAL,C23184,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
 2,R27 R29,100R,,,C22775,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
 2,R28 R30,100k,,,C25803,"JLC basic, confirm at order",Resistor_SMD:R_0603_1608Metric,yes,
-1,R35,3.09k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R36,2.49k 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,
-1,R37,2.4k,,,to assign,,Resistor_SMD:R_0603_1608Metric,DNP,"Preload, fit only if no-load regulation needs it"
-2,RS1 RS2,1m 2512 >=2W manganin,,,to assign,,Resistor_SMD:R_2512_6332Metric,yes,Outlet 1 shunt; 0.256 W at 16 A; Outlet 2 shunt
-1,RV1,"MOV 561K 10mm, thermally protected",,,to assign,,Varistor:RV_Disc_D12mm_W4.2mm_P7.5mm,yes,e.g. Littelfuse TMOV/ Bourns TMOV-type; 350 VAC
-2,TF1 TF2,TCO 15A 250V,,,to assign,,sws:TCO_Axial_15A,yes,Outlet 1 thermal cut-off; Tf TBD (EVT thermal test); Outlet 2 thermal cut-off
-2,TH1 TH2,10k B3950 1%,,,to assign,,Resistor_SMD:R_0603_1608Metric,yes,Against relay K1; Against relay K2
-1,U1,LNK3204D,LNK3204D,Power Integrations,to assign,,Package_SO:PowerIntegrations_SO-8C,yes,"Pinout from the KiCad library symbol: BP/M 1, FB 2, D 4, S 5-8, no pin 3"
+1,R35,3.09k 1%,CRCW06033K09FKEA,Vishay,C843947,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
+1,R36,2.49k 0.5%,0603WAD2491T5E,UNI-ROYAL,C407609,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,
+1,R37,2.4k,,,n/a,DNP,Resistor_SMD:R_0603_1608Metric,DNP,"Preload, fit only if no-load regulation needs it"
+2,RS1 RS2,1m 1% 5W metal element,CSS2H-2512R-1L00F,Bourns,C4175647,"yes, 10 Nov 2026",Resistor_SMD:R_2512_6332Metric,yes,Outlet 1 shunt; 0.256 W at 16 A; Outlet 2 shunt
+1,RV1,MOV 561K 10mm,MOV-10D561K,Bourns,C3263770,EVT uses plain MOV; thermally protected 10 mm type (Littelfuse TMOV / SETsafe SFV) to source for DVT,Varistor:RV_Disc_D12mm_W4.2mm_P7.5mm,yes,e.g. Littelfuse TMOV/ Bourns TMOV-type; 350 VAC
+2,TF1 TF2,TCO 15A 250V,,,n/a,"mechanical, chosen with the enclosure",sws:TCO_Axial_15A,yes,Outlet 1 thermal cut-off; Tf TBD (EVT thermal test); Outlet 2 thermal cut-off
+2,TH1 TH2,10k B3950 1%,CMFA103F3950HANT,FH,C47118797,"yes, 10 Nov 2026",Resistor_SMD:R_0603_1608Metric,yes,Against relay K1; Against relay K2
+1,U1,LNK3204D,LNK3204D-TL,Power Integrations,n/a,DigiKey 596-LNK3204D-TLCT-ND (not on LCSC),Package_SO:PowerIntegrations_SO-8C,yes,"Pinout from the KiCad library symbol: BP/M 1, FB 2, D 4, S 5-8, no pin 3"
 1,U2,BL0939,BL0939,Belling,C2841044,"in EVT plan, reconfirm",Package_SO:SSOP-20_3.9x8.7mm_P0.635mm,yes,
 1,U3,SN74LVC1G32DBVR,SN74LVC1G32DBVR,TI,C10096,"yes, 10 Nov 2026",Package_TO_SOT_SMD:SOT-23-5,yes,
 1,U4,LMV393IDR,LMV393IDR,TI,C7984,"yes, 10 Nov 2026",Package_SO:SOIC-8_3.9x4.9mm_P1.27mm,yes,

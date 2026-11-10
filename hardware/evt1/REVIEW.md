@@ -1,6 +1,6 @@
 # EVT1 schematic: review notes
 
-Draft E, 10 Nov 2026. For Daniel's engineering review before layout starts.
+Draft E, 10 Nov 2026, with part numbers, pinout checks and the first footprints. For Daniel's engineering review before layout starts.
 
 ## What changed in draft E (S2 simulation checks)
 
@@ -93,33 +93,50 @@ All six accepted by Daniel on 10 Nov 2026. D7 is required by the firmware. D8 is
 - the MOV's V–I curve at 1 kA;
 - conducted emissions of the buck (CISPR 14-1) at pre-compliance.
 
-**R2. Relay footprints.** The relay symbol's pin numbers (1 A1, 2 A2, 3 COM, 4 NO) are placeholders. Draw the G5RL-1A-E footprint from Omron's drawing, then confirm the HF115F/005-1HS3AF lands on it (D2).
+**R2. Relay footprint. Drawn** (`hardware/tools/footprints.py`).
+- Omron G5RL-1A-E pinning: coil 1/8, COM 3+6, NO 4+5. The doubled terminals carry the 16 A.
+- Hongfa HF115F (D2 second source) is drawn on a 2.52 mm grid (20.16 / 5.04 mm) where Omron uses 20.0 / 5.0 mm. Contact holes are 1.5 mm and sit midway, so either relay fits.
+- Still to do: confirm Hongfa's row pitch (assumed 7.56 mm), and check both relays against their drawings with a printed 1:1 footprint before release.
 
-**R3. AT42QT1011 pin 6 (SYNC/MODE).** It is strapped low by a fitted 0 Ω resistor, with an unfitted 0 Ω to strap it high. Check the datasheet's mode table and fit the right one.
+**R3. AT42QT1011 pin 6 (SYNC/MODE). Closed.** The pinout matches Microchip's datasheet. Strapped high (Fast mode, about 1 ms between bursts). Low-power mode sleeps about 80 ms per burst and would make the touch keys feel slow.
 
-**R4. NT3H2111 pinout.** Taken from the LCSC part listing (1 LA, 2 VSS, 3 SCL, 4 FD, 5 SDA, 6 VCC, 7 VOUT, 8 LB). Check it against NXP's datasheet before layout.
+**R4. NT3H2111 pinout. Closed.** Checked against NXP's NT3H2111_2211 datasheet (TSSOP8): 1 LA, 2 VSS, 3 SCL, 4 FD, 5 SDA, 6 VCC, 7 VOUT, 8 LB. The LNK3204D SO-8C pinout is also confirmed against Power Integrations' datasheet: 1 BP/M, 2 FB, 4 D, 5–8 S, no pin 3.
 
-**R5. Fuse position.** F1 sits in the neutral feed, because the hot side's ground has to be the live busbar for the shunts. For the L–N loop through the LD03 and KP3310 this is equivalent to Mornsun's live-side fuse, but ask the test lab. Also ask what prospective fault current to design for at a socket-outlet; F1's 1500 A breaking capacity assumes a final circuit, not a point near the consumer unit.
+**R5. Fuse position.** F1 sits in the neutral feed, because the hot side's ground has to be the live busbar for the shunts. For the L–N loop through the LD03 and the LNK3204 supply this is equivalent to Mornsun's live-side fuse, but ask the test lab. Also ask what prospective fault current to design for at a socket-outlet; F1's 1500 A breaking capacity assumes a final circuit, not a point near the consumer unit.
 
-**R6. Placeholder footprints, drawn at layout:**
+**R6. Footprints.**
+- **Drawn:** the relay (R2).
+- **Imported:** ESP32-C6-MINI-1, Espressif's own footprint (CC-BY-SA 4.0).
+- **Still placeholders, from manufacturer drawings:**
+  - Schurter UMT-H fuse (5.35 × 15.4 mm SMD);
+  - Mornsun LD03;
+  - SK6812MINI-E reverse-mount LED.
+- **Set by the enclosure, drawn at layout:**
+  - mains terminal;
+  - BS 1363 outlet contacts;
+  - thermal cut-off;
+  - touch electrodes;
+  - NFC antenna.
 
-- mains terminal
-- BS 1363 outlet contacts
-- thermal cut-off
-- relay
-- LD03
-- ESP32-C6-MINI-1 (KiCad 7 has no footprint for it; KiCad 8's library may)
-- SK6812MINI-E reverse-mount
-- touch electrode
-- NFC loop antenna
+**R7. Part numbers. Closed 10 Nov 2026.** Every BOM line has an LCSC number or a stated source (`ASSIGN` table in `evt1_design.py`).
 
-**R7. LCSC numbers still to assign: 48 parts (40 rear, 8 front).** Includes the new LNK3204D, ES1J, chokes and 450 V capacitors. F1 (Schurter UMT-H) comes from Schurter distributors.
+Notable choices:
+- Bourns CSS2H 5 W metal-element shunts.
+- ROHM KTR18 500 V anti-surge resistors in the mains divider (low JLC stock, so order early).
+- Ymin 450 V bulk capacitors rated 12 000 h.
+- Panasonic FK electrolytics. C19 and C26 move to 6.3 × 5.8 mm footprints.
+- 0.5 % feedback resistor for the buck.
 
-- Parts that need choosing first: shunts, fuse, MOV, wirewound and flameproof resistors, electrolytics, HV resistors (Vishay VR37 is not on LCSC), NTCs, B2B connectors, inductor.
-- 1 % resistor values outside JLC's basic list.
-- 33 nF and 10 nF C0G capacitors.
+Bought outside LCSC:
+- LNK3204D-TL (DigiKey);
+- VR37 high-voltage resistors (DigiKey/Mouser);
+- LD03 (Mornsun or DigiKey, D4);
+- Schurter UMT-H;
+- Bourns FW20A fusible resistor for R2.
 
-The full BOM marks every part's status. Numbers marked "JLC basic, confirm at order" come from JLC's basic-parts list and were not rechecked this session.
+Open:
+- The MOV is a plain 10D561K for EVT; a thermally protected type (Littelfuse TMOV or SETsafe SFV) is needed for DVT.
+- R1 (12 Ω 3 W) gets its LCSC number at order.
 
 **R8. Values to tune at EVT:**
 

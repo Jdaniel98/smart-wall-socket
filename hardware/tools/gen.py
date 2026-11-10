@@ -64,9 +64,12 @@ def write_bom(proj, folder):
                     "Footprint", "Fitted", "Notes"])
         for r in rows:
             chk = {"yes": "yes, 10 Nov 2026", "plan": "in EVT plan, reconfirm"}.get(r["ver"], "")
-            if r["lcsc"] and not chk:
+            lcsc = r["lcsc"] or "to assign"
+            if r["ver"].startswith("src:"):      # sourced outside LCSC, or not a bought part
+                chk, lcsc = r["ver"][4:], r["lcsc"] or "n/a"
+            elif r["lcsc"] and not chk:
                 chk = "JLC basic, confirm at order"
-            w.writerow([r["qty"], " ".join(r["refs"]), r["value"], r["mpn"], r["mfr"], r["lcsc"] or "to assign",
+            w.writerow([r["qty"], " ".join(r["refs"]), r["value"], r["mpn"], r["mfr"], lcsc,
                         chk, r["fp"], "DNP" if r["dnp"] else "yes", r["notes"]])
     return rows
 
