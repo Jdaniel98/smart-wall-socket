@@ -105,12 +105,11 @@ All six accepted by Daniel on 10 Nov 2026. D7 is required by the firmware. D8 is
 **R5. Fuse position.** F1 sits in the neutral feed, because the hot side's ground has to be the live busbar for the shunts. For the L–N loop through the LD03 and the LNK3204 supply this is equivalent to Mornsun's live-side fuse, but ask the test lab. Also ask what prospective fault current to design for at a socket-outlet; F1's 1500 A breaking capacity assumes a final circuit, not a point near the consumer unit.
 
 **R6. Footprints.**
-- **Drawn:** the relay (R2).
+- **Drawn:** the relay (R2), plus three parts from manufacturer data (details in `lib/sws.pretty/README.md`):
+  - **Schurter UMT-H fuse:** Schurter's land, pads 3.75 × 5.6 mm with a 10.0 mm gap.
+  - **Mornsun LD03:** 2.54 mm grid, AC pins 18.3 mm (pad to pad) from DC pins. Mornsun's drawing is only a graphic, so the pin positions come from two built designs that agree. Caliper-check the first module. Plan for 17.6 mm height (the current Mornsun table; the 2021 datasheet says 16.0) in the 35 mm box.
+  - **SK6812MINI-E reverse-mount LED:** 3.6 × 3.2 mm cutout with R0.5 corners. The body corners need the extra 0.2 mm, because a 3.4 × 3.0 cutout with R0.5 corners hits them. Light exits on the B side; place it on the side away from the faceplate.
 - **Imported:** ESP32-C6-MINI-1, Espressif's own footprint (CC-BY-SA 4.0).
-- **Still placeholders, from manufacturer drawings:**
-  - Schurter UMT-H fuse (5.35 × 15.4 mm SMD);
-  - Mornsun LD03;
-  - SK6812MINI-E reverse-mount LED.
 - **Set by the enclosure, drawn at layout:**
   - mains terminal;
   - BS 1363 outlet contacts;
