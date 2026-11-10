@@ -21,6 +21,7 @@
 #include "app.h"
 #include "esp_console.h"
 #include "esp_log.h"
+#include "esp_heap_caps.h"
 #include "esp_system.h"
 
 void app_factory_reset(void);
@@ -54,6 +55,9 @@ static int cmd_status(int argc, char **argv)
            s.cal.gain_v, s.cal.gain_i[0], s.cal.gain_i[1], s.cal.gain_p[0], s.cal.gain_p[1],
            s.hold_permille, net_connected() ? "online" : "offline",
            net_time_synced() ? "set" : "not set");
+    printf("heap free %lu bytes, lowest %lu, largest block %lu\n",
+           (unsigned long)esp_get_free_heap_size(), (unsigned long)esp_get_minimum_free_heap_size(),
+           (unsigned long)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
     return 0;
 }
 
