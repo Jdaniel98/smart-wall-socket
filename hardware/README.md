@@ -51,6 +51,10 @@ Inside a block, parts are placed in rows, and each IC has the parts that connect
 - The board-to-board header carries no mains net and has the same pin map on both boards.
 - The ESP32 pads match the GPIO map the firmware will use.
 
+## CI
+
+`.github/workflows/hardware.yml` runs on every push that touches `hardware/`. It installs KiCad 7's `kicad-cli`, runs `verify.py`, and uploads both schematic PDFs as a build artifact. A failed check blocks the PR.
+
 ## Safety
 
 The rear board's hot-side ground is the **live** busbar (`L_BUS`). Never connect a scope ground or an earthed instrument to it. Bench work on a powered rear board needs an isolation transformer, an RCD and the rules in `docs/proto0-bench-guide.md`.
