@@ -29,6 +29,7 @@ static const char *TAG = "control";
 #define TICK_MS 100
 #define METER_PERIOD_MS 500
 #define REPORTED_PERIOD_MS (5 * 60 * 1000)
+#define MATTER_METER_PERIOD_MS 1000
 #define PENDING_MAX 32
 #define MSG_BUF 1024
 
@@ -511,6 +512,19 @@ static void drain_prot_events(void)
     }
 }
 
+/* Watts, volts, amps and kWh for Apple Home / Google Home. */
+static void sync_matter_meter(void)
+{
+    if (!matter_enabled()) {
+        return;
+    }
+    double wh[SWS_OUTLETS];
+    for (int k = 0; k < SWS_OUTLETS; k++) {
+        wh[k] = energy_wh(&s_energy, k, s_cal.e_ref[k], s_cal.gain_p[k]);
+    }
+    matter_report_meter(&s_last_meas, s_prot.meter_ok, wh);
+}
+
 /* Matter shows the user's intent (desired), so a tap during a restore wait
  * does not bounce back. A refused command is corrected here. */
 static void sync_matter(void)
@@ -594,7 +608,7 @@ static void control_task(void *arg)
     ESP_ERROR_CHECK(esp_task_wdt_add(NULL));
 
     uint64_t last_meter = 0, last_telemetry = now, last_reported = now, last_hb = 0,
-             last_sched = 0;
+             last_sched = 0, last_matter_meter = 0;
     TickType_t wake = xTaskGetTickCount();
 
     for (;;) {
@@ -645,6 +659,10 @@ static void control_task(void *arg)
         drain_prot_events();
         save_last_on_if_changed();
         sync_matter();
+        if (now - last_matter_meter >= MATTER_METER_PERIOD_MS) {
+            last_matter_meter = now;
+            sync_matter_meter();
+        }
         check_outage();
         if (now - last_telemetry >= (uint64_t)CONFIG_SWS_TELEMETRY_PERIOD_S * 1000u) {
             last_telemetry = now;

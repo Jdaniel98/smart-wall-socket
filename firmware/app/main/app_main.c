@@ -35,6 +35,9 @@ bool matter_report_onoff(int outlet, bool on)
 {
     return false;
 }
+void matter_report_meter(const sws_meas_t *m, bool meter_ok, const double wh[SWS_OUTLETS])
+{
+}
 #endif
 
 void app_factory_reset(void)

@@ -134,8 +134,11 @@ bool net_publish(const char *subtopic, const char *payload, int qos, bool retain
 /* ---------- Matter ---------- */
 
 esp_err_t matter_start(void);
-/* Returns false if Matter is not running yet. */
+/* Returns false if Matter is not running yet. Never blocks. */
 bool matter_report_onoff(int outlet, bool on);
+/* Latest readings for the Electrical Power/Energy Measurement clusters.
+ * Never blocks: values are handed to the Matter thread. */
+void matter_report_meter(const sws_meas_t *m, bool meter_ok, const double wh[SWS_OUTLETS]);
 bool matter_enabled(void);
 
 /* ---------- console ---------- */
