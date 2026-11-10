@@ -34,7 +34,9 @@ Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5
 
 `verify.py` passes with 0 errors: the KiCad netlist matches the design data, and the safety rules in `hardware/README.md` hold.
 
-## New decisions, for the decision log
+## Decisions D7–D12
+
+All six accepted by Daniel on 10 Nov 2026. D7 is required by the firmware. D8 is 470 Ω. D9 is 4 × SK6812 RGB with switched 5 V. D10–D12 are as drawn. PR #1 merges once the schematic is closed.
 
 | # | Decision | Why |
 |---|---|---|
