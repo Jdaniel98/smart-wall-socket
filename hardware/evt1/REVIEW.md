@@ -2,6 +2,24 @@
 
 Draft D, 10 Nov 2026. For Daniel's engineering review before layout starts.
 
+## S2 simulation checks (10 Nov 2026): block 5 must change
+
+Full study: `hardware/sim/S2-study.md`.
+
+- **Polarity and earth check fails as drawn.** The draft C hysteresis (R31/R33, R32/R34) feeds the 1 MΩ peak-detector node and latches it at about 2.8 V. **A socket with no earth reads "earthed and correct".** Keeping the peak detector and moving the hysteresis still fails most corners: BAT54WS leakage at 85 °C, and the mains range overlapping the factor of 2 between earthed and unearthed.
+- **Proposed scheme F (needs Daniel's sign-off, then draft E):**
+  - remove the peak detector: C12, R33 and R34 out;
+  - D3 becomes a BAS116 low-leakage diode in series;
+  - R17/R20 47 kΩ, R21 470 kΩ, threshold ladder 182k/100k/49.9k;
+  - POL_A/POL_B become 50 Hz pulse trains;
+  - firmware times them, converts duty to amplitude and divides by the BL0939's mains reading;
+  - end-of-line test stores each unit's reference ratio.
+  
+  This passes every corner: 185–265 V, earth–neutral 0–30 V, arms ±20 %, 0–85 °C.
+- **Limit of any passive check:** a plugged-in appliance's EMI filter hides a missing earth. No-earth can only be reported from a wiring test with both outlets empty. This feeds D3: no-earth advisory, swapped keeps the outlets off.
+- **Relays pass.** Pull-in margin is 0.37 V with an 85 °C coil. Proposed holding duty is 600 permille at 23 °C, scaled by the NTC temperature.
+- **5 V rail passes.** Worst dip 0.18 V; the LD03 peaks at 607 mA, under its 660 mA limit. Firmware rule: stagger the relay pull-ins by at least 60 ms.
+
 ## What changed in draft D
 
 The hot-side supply is now an LNK3204D half-wave buck, which closes R1 (Daniel's decision, 10 Nov 2026). The R1 study (`hardware/sim/R1-study.md`) showed the KP3310 could not both survive a surge and supply the hot side.
@@ -107,7 +125,7 @@ The full BOM marks every part's status. Numbers marked "JLC basic, confirm at or
 - Touch: Cs (10 nF) and Rs (4.7 kΩ).
 - NFC antenna tuning capacitor C115.
 - Buck feed-forward capacitor C103 (not fitted).
-- Relay holding duty.
+- Relay holding duty. S2 proposes 600 permille at 23 °C, scaled by 1 + 0.00393 (T − 23) from the relay NTC. Confirm with drop-out and knock tests.
 
 ## Firmware changes this schematic implies
 
