@@ -1,15 +1,15 @@
 # EVT1 schematic: review notes
 
-Draft A, 10 Nov 2026. For Daniel's engineering review before layout starts.
+Draft B, 10 Nov 2026 (same circuit as draft A, redrawn one sheet per board with wired blocks). For Daniel's engineering review before layout starts.
 
 ## Scope
 
 Both boards from the EVT hardware plan v0.1. The plan's decisions D1, D2, D4, D5 and D6 are taken as accepted. D3 (what to do when no earth is detected) stays open; it changes firmware only, not this schematic.
 
-| Board | Sheets | Parts | Nets |
+| Board | Sheet layout | Parts | Nets |
 |---|---|---|---|
-| Rear (`sws-rear`) | Hot side; barrier crossing; safe zone | 82 | 58 |
-| Front (`sws-front`) | MCU and power; touch, NFC and light | 67 | 45 |
+| Rear (`sws-rear`) | One sheet: hot side, hot-side sensing, barrier crossing, safe zone | 82 | 58 |
+| Front (`sws-front`) | One sheet: power and processor, user interface | 67 | 45 |
 
 `verify.py` passes with 0 errors: the KiCad netlist matches the design data, and the safety rules in `hardware/README.md` hold.
 

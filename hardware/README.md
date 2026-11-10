@@ -4,12 +4,14 @@ EVT1 schematics for the Smart Wall Socket. **Draft for engineering review, not a
 
 | Path | What it is |
 |---|---|
-| `evt1/rear/` | Rear board: hot side, barrier crossing, safe zone (KiCad project `sws-rear`) |
-| `evt1/front/` | Front board: SELV only (KiCad project `sws-front`) |
+| `evt1/rear/` | Rear board, one sheet: hot side, barrier crossing, safe zone (KiCad project `sws-rear`) |
+| `evt1/front/` | Front board, one sheet: SELV only (KiCad project `sws-front`) |
 | `evt1/lib/sws.kicad_sym` | Project symbol library |
 | `evt1/REVIEW.md` | Decisions taken, open items, what to check |
 | `tools/evt1_design.py` | The design as data: parts, values, nets |
-| `tools/gen.py` | Writes the KiCad files, PDFs come from `kicad-cli` |
+| `tools/layout.py` | Places each block in its frame and draws the wires with a small grid router |
+| `tools/gen.py` | Writes the KiCad files; PDFs come from `kicad-cli` |
+| `tools/kicad-theme-paper.json` | Paper colour theme used for the PDFs |
 | `tools/verify.py` | Checks the exported netlist against the design and runs the safety rules |
 
 Each project folder also holds the schematic PDF, the KiCad netlist and two BOMs: a full one, and one in JLCPCB's assembly format.
@@ -19,8 +21,9 @@ Each project folder also holds the schematic PDF, the KiCad netlist and two BOMs
 ```sh
 python3 hardware/tools/gen.py
 python3 hardware/tools/verify.py      # must print "0 errors"
+mkdir -p ~/.config/kicad/7.0/colors && cp hardware/tools/kicad-theme-paper.json ~/.config/kicad/7.0/colors/paper.json
 for b in rear front; do
-  kicad-cli sch export pdf -o hardware/evt1/$b/sws-$b-schematic.pdf hardware/evt1/$b/sws-$b.kicad_sch
+  kicad-cli sch export pdf -t paper -o hardware/evt1/$b/sws-$b-schematic.pdf hardware/evt1/$b/sws-$b.kicad_sch
   kicad-cli sch export netlist -o hardware/evt1/$b/sws-$b.net hardware/evt1/$b/sws-$b.kicad_sch
 done
 ```
@@ -29,7 +32,15 @@ The files are KiCad 7 format (the newest available in the build environment). Ki
 
 ## How the drawing is built
 
-Every pin carries a net label on its end; there are no wires. That makes the sheets read like a netlist rather than a flow diagram, but it means the drawing cannot drift from the design data: `verify.py` exports the netlist with `kicad-cli` and compares it with the data net by net.
+Each board is one sheet laid out in columns, and each functional block sits in its own titled frame. On the rear board the columns run hot side, barrier crossing, safe zone, with the barrier drawn as a dashed line.
+
+Inside a block, parts are placed in rows, and each IC has the parts that connect to its left-hand pins on its left. A grid router then draws the nets as wires:
+
+- Rails (GND, the 3.3 V and 5 V rails, and the live hot-side reference `L_BUS`) use power symbols.
+- Signals that leave a block end in flag labels.
+- Where the router can't find a clean path, it uses a pair of labels instead; this happened on 5 connections across both boards.
+
+`verify.py` exports the netlist with `kicad-cli` and compares it with the design data net by net. Any wire that shorts, splits or misses a pin fails the check.
 
 `verify.py` also enforces:
 

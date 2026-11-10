@@ -87,32 +87,43 @@ def check_netlist(proj):
         return
     comps, got = parse_netlist(txt)
     exp, nc = expected(proj)
+    owner = {node: net for net, nodes in exp.items() for node in nodes}
     refs = {p.ref for p in parts(proj)}
     if not refs <= comps:
         errors.append(f"{proj.name}: components missing from netlist: {sorted(refs - comps)}")
     bad_refs = [c for c in comps if "?" in c]
     if bad_refs:
         errors.append(f"{proj.name}: unannotated references {bad_refs}")
-    got_norm = {}
+    found = {}
     for name, nodes in got.items():
         nodes = {n for n in nodes if not n[0].startswith("#")}
-        if name.startswith("unconnected-") or name.startswith("Net-("):
+        if not nodes:
+            continue
+        if name.startswith("unconnected-"):
             for n in nodes:
                 if n not in nc:
-                    errors.append(f"{proj.name}: {n} is unconnected in the drawing but on a net in the design")
+                    errors.append(f"{proj.name}: {n} is unconnected in the drawing but on net {owner.get(n)}")
             continue
-        got_norm.setdefault(norm(name), set()).update(nodes)
+        stray = [n for n in nodes if n not in owner]
+        if stray:
+            errors.append(f"{proj.name}: {sorted(stray)} meant to be unconnected but on net {name}")
+        dn = {owner[n] for n in nodes if n in owner}
+        if len(dn) > 1:
+            errors.append(f"{proj.name}: SHORT in drawing, net {name} joins {sorted(dn)}")
+            continue
+        if not dn:
+            continue
+        d = dn.pop()
+        if not name.startswith("Net-(") and norm(name) != d:
+            errors.append(f"{proj.name}: net {d} is named {name} in the drawing")
+        found.setdefault(d, []).append(nodes)
     for net, nodes in exp.items():
-        g = got_norm.get(net)
-        if g is None:
-            errors.append(f"{proj.name}: net {net} missing from netlist")
-        elif g != nodes:
-            errors.append(f"{proj.name}: net {net} differs: missing {sorted(nodes - g)}, extra {sorted(g - nodes)}")
-    for net in got_norm:
-        if net not in exp:
-            errors.append(f"{proj.name}: unexpected net {net}: {sorted(got_norm[net])}")
-    print(f"{proj.name}: netlist has {len(comps)} components, {len(got_norm)} named nets; "
-          f"design has {len(exp)} nets")
+        pieces = found.get(net, [])
+        if len(pieces) != 1:
+            errors.append(f"{proj.name}: net {net} is drawn as {len(pieces)} separate pieces")
+        elif pieces[0] != nodes:
+            errors.append(f"{proj.name}: net {net} differs: missing {sorted(nodes - pieces[0])}")
+    print(f"{proj.name}: netlist has {len(comps)} components; {len(found)} of {len(exp)} design nets matched")
 
 
 def check_rules(proj):

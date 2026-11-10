@@ -12,12 +12,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from kicad_gen import Writer, write_symbol_library  # noqa: E402
+from kicad_gen import write_symbol_library  # noqa: E402
+from layout import write_project  # noqa: E402
 import evt1_design as d  # noqa: E402
 
 OUT = os.path.normpath(os.path.join(HERE, "..", "evt1"))
 DATE = "2026-11-10"
-REV = "EVT1-draft-A"
+REV = "EVT1-draft-B"
 
 
 def all_parts(proj):
@@ -73,12 +74,16 @@ def main():
     syms = {}
     for proj in d.PROJECTS:
         folder = os.path.join(OUT, proj.name.replace("sws-", ""))
-        Writer(proj, folder, DATE, REV).write_all()
+        for f in os.listdir(folder) if os.path.isdir(folder) else []:
+            if f.endswith(".kicad_sch"):
+                os.remove(os.path.join(folder, f))
+        paper, failed, used = write_project(proj, folder, DATE, REV)
         rows = write_bom(proj, folder)
         n = sum(r["qty"] for r in rows)
-        print(f"{proj.name}: {len(proj.sheets)} sheets, {n} parts, {len(rows)} BOM lines -> {folder}")
-        for _, _, p in all_parts(proj):
-            syms[p.sym.name] = p.sym
+        print(f"{proj.name}: one {paper} sheet, {n} parts, {len(rows)} BOM lines, "
+              f"{failed} connections drawn as labels -> {folder}")
+        for s in used:
+            syms[s.name] = s
     write_symbol_library(list(syms.values()), os.path.join(OUT, "lib", "sws.kicad_sym"))
     print(f"library: {len(syms)} symbols")
 

@@ -1,27 +1,23 @@
 """
-Minimal KiCad 7 schematic writer for the Smart Wall Socket hardware.
+Design objects and symbol definitions for the Smart Wall Socket schematics.
 
-The design lives in plain Python (parts, pins, nets). This module turns it into
-hierarchical .kicad_sch files with embedded symbols, where every pin is joined
-to its net by a label placed on the pin's end. No wires are drawn, so the
-drawing cannot disagree with the netlist: verify.py re-reads the netlist that
-kicad-cli exports and compares it with the design, net by net.
+Symbols are generated, not taken from the KiCad libraries, so their pin
+positions are known exactly. Two-pin parts come in four variants (pin 1 left,
+pin 2 left, pin 1 top, pin 2 top) so the layout can turn them without using
+KiCad's symbol rotation.
 
-Coordinates: millimetres, everything on the 1.27 mm (50 mil) grid.
-Symbol space has +y up; schematic space has +y down.
+Coordinates: millimetres on the 1.27 mm grid. Symbol space has +y up.
 """
 from __future__ import annotations
 
-import json
 import math
-import os
 import uuid
 from dataclasses import dataclass, field
 
 G = 1.27
 PIN_LEN = 2.54
 FONT = 1.27
-CHAR_W = 1.0  # average glyph advance at 1.27 mm font, a little generous
+CHAR_W = 1.0  # average glyph advance at a 1.27 mm font, a little generous
 
 
 def snap(v: float) -> float:
@@ -33,7 +29,6 @@ def q(s: str) -> str:
 
 
 def new_uuid(seed: str | None = None) -> str:
-    # Deterministic UUIDs keep diffs small between regenerations.
     if seed is None:
         return str(uuid.uuid4())
     return str(uuid.uuid5(uuid.NAMESPACE_URL, "aetherlabs/sws/" + seed))
@@ -47,43 +42,60 @@ def new_uuid(seed: str | None = None) -> str:
 class Pin:
     nums: list[str]       # several numbers = stacked pins at one position
     name: str
-    etype: str            # input, output, bidirectional, passive, power_in,
-                          # power_out, open_collector, tri_state, no_connect
-    side: str = "L"       # L or R
+    etype: str
+    side: str = "L"       # L, R, T, B
     x: float = 0.0        # connection point, symbol space
     y: float = 0.0
-    angle: int = 0
+    angle: int = 0        # KiCad pin angle: 0 points right (pin on the left side)
 
 
 @dataclass
 class SymDef:
-    name: str                     # without library prefix
-    kind: str = "box"             # box or a two-pin graphic kind
+    name: str
+    kind: str = "box"
     ref: str = "U"
     pins: list[Pin] = field(default_factory=list)
     desc: str = ""
-    w2: float = 0.0               # half body width
-    top: float = 0.0              # y of first pin row
+    w2: float = 0.0
+    top: float = 0.0
     body_top: float = 0.0
     body_bot: float = 0.0
     show_pin_names: bool = True
+    prims: list = field(default_factory=list)   # graphics primitives
+    variant: str = "H"                          # H, HR, V, VR for two-pin parts
+    base: "SymDef | None" = None
 
     @property
     def lib_id(self) -> str:
         return "sws:" + self.name
 
-    def pin_by_num(self, num: str) -> Pin:
-        for p in self.pins:
-            if num in p.nums:
-                return p
-        raise KeyError(f"{self.name}: no pin {num}")
+    def bbox(self):
+        """Body extent in symbol space (x0, y0, x1, y1), pins excluded."""
+        if self.kind == "box":
+            return (-self.w2, self.body_bot, self.w2, self.body_top)
+        xs, ys = [], []
+        for p in self.prims:
+            for (x, y) in _prim_points(p):
+                xs.append(x)
+                ys.append(y)
+        return (min(xs), min(ys), max(xs), max(ys))
 
 
-TWO_PIN = {"R", "C", "CP", "L", "D", "DS", "DZ", "TVS", "F", "RV", "NTC", "LED", "TCO", "SH"}
+def _prim_points(p):
+    t = p[0]
+    if t == "poly":
+        return p[1]
+    if t == "rect":
+        return [p[1], p[2]]
+    if t == "arc":
+        return [p[1], p[2], p[3]]
+    if t == "circle":
+        (cx, cy), r = p[1], p[2]
+        return [(cx - r, cy - r), (cx + r, cy + r)]
+    return []
 
 
 def box(name: str, left, right, ref="U", desc="") -> SymDef:
-    """left/right: lists of (numbers, name, etype); numbers may be 'a,b,c'."""
     s = SymDef(name=name, kind="box", ref=ref, desc=desc)
     n = max(len(left), len(right), 1)
     s.top = snap((n - 1) * G)
@@ -93,34 +105,101 @@ def box(name: str, left, right, ref="U", desc="") -> SymDef:
     s.w2 = max(5.08, math.ceil(w / 2 / 2.54) * 2.54)
     s.body_top = s.top + 2.54
     s.body_bot = -s.top - 2.54
+    s.prims = [("rect", (-s.w2, s.body_top), (s.w2, s.body_bot), "background")]
     for side, lst in (("L", left), ("R", right)):
         for i, (nums, pname, et) in enumerate(lst):
             y = s.top - i * 2.54
-            if side == "L":
-                x, ang = -s.w2 - PIN_LEN, 0
-            else:
-                x, ang = s.w2 + PIN_LEN, 180
-            s.pins.append(Pin(nums=[t.strip() for t in str(nums).split(",")], name=pname,
-                              etype=et, side=side, x=x, y=y, angle=ang))
+            x, ang = (-s.w2 - PIN_LEN, 0) if side == "L" else (s.w2 + PIN_LEN, 180)
+            s.pins.append(Pin([t.strip() for t in str(nums).split(",")], pname, et, side, x, y, ang))
     return s
+
+
+def _two_pin_prims(k: str) -> list:
+    g = []
+    line = lambda *pts: g.append(("poly", list(pts), "none"))
+    if k in ("R", "F", "RV", "NTC", "SH", "TCO"):
+        g.append(("rect", (-2.54, 0.889), (2.54, -0.889), "none"))
+        if k == "F":
+            line((-2.54, 0), (2.54, 0))
+        if k in ("RV", "NTC"):
+            line((-2.032, -1.524), (1.524, 1.524), (2.286, 1.524))
+        if k == "SH":
+            line((-1.27, 0.889), (-1.27, 1.778))
+            line((1.27, 0.889), (1.27, 1.778))
+    if k == "TCO":
+        g.clear()
+        line((-2.54, 0), (-0.762, 0), (0.762, 1.016))
+        line((0.762, 0), (2.54, 0))
+        g.append(("rect", (-2.032, 1.524), (2.032, -0.635), "none"))
+    elif k in ("C", "CP"):
+        line((-2.54, 0), (-0.508, 0))
+        line((0.508, 0), (2.54, 0))
+        line((-0.508, 1.778), (-0.508, -1.778))
+        if k == "C":
+            line((0.508, 1.778), (0.508, -1.778))
+        else:
+            g.append(("arc", (1.016, 1.778), (0.508, 0), (1.016, -1.778)))
+            line((-1.778, 1.524), (-1.778, 0.508))
+            line((-2.286, 1.016), (-1.27, 1.016))
+    elif k == "L":
+        for i in range(4):
+            x0 = -2.54 + i * 1.27
+            g.append(("arc", (x0 + 1.27, 0), (x0 + 0.635, 0.635), (x0, 0)))
+    elif k in ("D", "DS", "DZ", "TVS", "LED"):
+        line((-2.54, 0), (-1.27, 0))
+        line((1.27, 0), (2.54, 0))
+        g.append(("poly", [(1.27, 1.27), (1.27, -1.27), (-1.27, 0), (1.27, 1.27)], "none"))
+        if k == "DS":
+            line((-0.762, 1.016), (-0.762, 1.27), (-1.27, 1.27), (-1.27, -1.27), (-1.778, -1.27), (-1.778, -1.016))
+        elif k in ("DZ", "TVS"):
+            line((-0.762, 1.27), (-1.27, 1.27), (-1.27, -1.27), (-1.778, -1.27))
+        else:
+            line((-1.27, 1.27), (-1.27, -1.27))
+    return g
 
 
 def two_pin(name: str, kind: str, ref: str, n1="1", n2="2", desc="") -> SymDef:
     s = SymDef(name=name, kind=kind, ref=ref, desc=desc, show_pin_names=False)
-    s.w2 = 2.54
-    s.top = 0
-    s.body_top = 1.905
-    s.body_bot = -1.905
+    s.prims = _two_pin_prims(kind)
     s.pins = [Pin([n1], "~", "passive", "L", -5.08, 0, 0),
               Pin([n2], "~", "passive", "R", 5.08, 0, 180)]
+    s.w2, s.body_top, s.body_bot = 2.54, 1.905, -1.905
+    s.variants = {"H": s}
+    for v in ("HR", "V", "VR"):
+        s.variants[v] = _variant(s, v)
     return s
+
+
+_XF = {
+    "HR": (lambda x, y: (-x, y), {0: 180, 180: 0}),
+    "V": (lambda x, y: (y, -x), {0: 270, 180: 90}),
+    "VR": (lambda x, y: (-y, x), {0: 90, 180: 270}),
+}
+
+
+def _variant(s: SymDef, v: str) -> SymDef:
+    f, amap = _XF[v]
+    t = SymDef(name=f"{s.name}_{v}", kind=s.kind, ref=s.ref, desc=s.desc, show_pin_names=False,
+               variant=v, base=s)
+    for p in s.prims:
+        if p[0] == "poly":
+            t.prims.append(("poly", [f(*pt) for pt in p[1]], p[2]))
+        elif p[0] == "rect":
+            t.prims.append(("rect", f(*p[1]), f(*p[2]), p[3]))
+        elif p[0] == "arc":
+            t.prims.append(("arc", f(*p[1]), f(*p[2]), f(*p[3])))
+    for p in s.pins:
+        x, y = f(p.x, p.y)
+        ang = amap[p.angle]
+        side = {0: "L", 180: "R", 270: "T", 90: "B"}[ang]
+        t.pins.append(Pin(list(p.nums), p.name, p.etype, side, x, y, ang))
+    return t
 
 
 def one_pin(name: str, ref: str, desc="") -> SymDef:
     s = SymDef(name=name, kind="TP", ref=ref, desc=desc, show_pin_names=False)
-    s.w2 = 1.27
-    s.body_top = 1.27
-    s.body_bot = -1.27
+    s.prims = [("circle", (0.635, 0), 0.635), ("poly", [(-1.27, 0), (0, 0)], "none")]
+    s.w2, s.body_top, s.body_bot = 1.27, 1.27, -1.27
     s.pins = [Pin(["1"], "~", "passive", "L", -2.54, 0, 0)]
     return s
 
@@ -129,92 +208,93 @@ def _stroke(w=0.254):
     return f"(stroke (width {w}) (type default))"
 
 
-def _graphics(s: SymDef) -> list[str]:
-    k = s.kind
-    g = []
-    line = lambda *pts: g.append("(polyline (pts " + " ".join(f"(xy {x} {y})" for x, y in pts)
-                                 + f") {_stroke()} (fill (type none)))")
-    if k == "box":
-        g.append(f"(rectangle (start {-s.w2} {s.body_top}) (end {s.w2} {s.body_bot}) "
-                 f"{_stroke()} (fill (type background)))")
-        return g
-    if k == "TP":
-        g.append(f"(circle (center 0.635 0) (radius 0.635) {_stroke()} (fill (type none)))")
-        line((-1.27, 0), (0, 0))
-        return g
-    # two-pin parts: leads from +-2.54 to the body
-    if k in ("R", "F", "RV", "NTC", "SH", "TCO"):
-        g.append(f"(rectangle (start -2.54 0.889) (end 2.54 -0.889) {_stroke()} (fill (type none)))")
-        if k == "F":
-            line((-2.54, 0), (2.54, 0))
-        if k in ("RV", "NTC"):
-            line((-2.032, -1.524), (1.524, 1.524), (2.286, 1.524))
-        if k == "SH":
-            line((-1.27, 0.889), (-1.27, 1.778))
-            line((1.27, 0.889), (1.27, 1.778))
-        if k == "TCO":
-            line((-2.54, 0), (-0.635, 0), (0.635, 0.635))
-            line((0.635, 0), (2.54, 0))
-    elif k in ("C", "CP"):
-        line((-2.54, 0), (-0.508, 0))
-        line((0.508, 0), (2.54, 0))
-        line((-0.508, 1.778), (-0.508, -1.778))
-        if k == "C":
-            line((0.508, 1.778), (0.508, -1.778))
-        else:
-            g.append(f"(arc (start 1.016 1.778) (mid 0.508 0) (end 1.016 -1.778) {_stroke()} (fill (type none)))")
-            line((-1.778, 1.524), (-1.778, 0.508))
-            line((-2.286, 1.016), (-1.27, 1.016))
-    elif k == "L":
-        for i in range(4):
-            x0 = -2.54 + i * 1.27
-            g.append(f"(arc (start {x0 + 1.27} 0) (mid {x0 + 0.635} 0.635) (end {x0} 0) "
-                     f"{_stroke()} (fill (type none)))")
-    elif k in ("D", "DS", "DZ", "TVS", "LED"):
-        # cathode on the left (pin 1), anode on the right (pin 2)
-        line((-2.54, 0), (-1.27, 0))
-        line((1.27, 0), (2.54, 0))
-        g.append(f"(polyline (pts (xy 1.27 1.27) (xy 1.27 -1.27) (xy -1.27 0) (xy 1.27 1.27)) "
-                 f"{_stroke()} (fill (type none)))")
-        if k == "DS":
-            line((-0.762, 1.016), (-0.762, 1.27), (-1.27, 1.27), (-1.27, -1.27), (-1.778, -1.27), (-1.778, -1.016))
-        elif k in ("DZ", "TVS"):
-            line((-0.762, 1.27), (-1.27, 1.27), (-1.27, -1.27), (-1.778, -1.27))
-        else:
-            line((-1.27, 1.27), (-1.27, -1.27))
-        if k == "LED":
-            line((-0.508, 1.778), (0.762, 3.048))
-            line((0.508, 1.778), (1.778, 3.048))
-    return g
+def _prim_text(p) -> str:
+    t = p[0]
+    if t == "poly":
+        return ("(polyline (pts " + " ".join(f"(xy {x:.4f} {y:.4f})" for x, y in p[1]) +
+                f") {_stroke()} (fill (type {p[2]})))")
+    if t == "rect":
+        return f"(rectangle (start {p[1][0]:.4f} {p[1][1]:.4f}) (end {p[2][0]:.4f} {p[2][1]:.4f}) {_stroke()} (fill (type {p[3]})))"
+    if t == "arc":
+        return (f"(arc (start {p[1][0]:.4f} {p[1][1]:.4f}) (mid {p[2][0]:.4f} {p[2][1]:.4f}) "
+                f"(end {p[3][0]:.4f} {p[3][1]:.4f}) {_stroke()} (fill (type none)))")
+    if t == "circle":
+        return f"(circle (center {p[1][0]:.4f} {p[1][1]:.4f}) (radius {p[2]}) {_stroke()} (fill (type none)))"
+    raise ValueError(t)
 
 
-def sym_lib_text(s: SymDef, indent="    ") -> str:
-    pn = "" if s.show_pin_names else " (pin_names (offset 0.254) hide)"
-    pn_num = " (pin_numbers hide)" if s.kind != "box" else ""
-    out = [f'(symbol {q(s.lib_id)}{pn_num}{pn if s.kind != "box" else " (pin_names (offset 0.762))"} (in_bom yes) (on_board yes)']
-    out.append(f'  (property "Reference" {q(s.ref)} (at 0 {s.body_top + 1.27} 0) (effects (font (size {FONT} {FONT}))))')
-    out.append(f'  (property "Value" {q(s.name)} (at 0 {s.body_bot - 1.27} 0) (effects (font (size {FONT} {FONT}))))')
-    out.append(f'  (property "Footprint" "" (at 0 0 0) (effects (font (size {FONT} {FONT})) hide))')
-    out.append(f'  (property "Datasheet" "~" (at 0 0 0) (effects (font (size {FONT} {FONT})) hide))')
+def sym_lib_text(s: SymDef, indent="    ", lib_name: str | None = None) -> str:
+    name = lib_name or s.lib_id
+    if s.kind == "box":
+        head = f"(symbol {q(name)} (pin_names (offset 0.762)) (in_bom yes) (on_board yes)"
+    else:
+        head = f"(symbol {q(name)} (pin_numbers hide) (pin_names (offset 0.254) hide) (in_bom yes) (on_board yes)"
+    x0, y0, x1, y1 = s.bbox()
+    out = [head,
+           f'  (property "Reference" {q(s.ref)} (at 0 {y1 + 1.27:.4f} 0) (effects (font (size {FONT} {FONT}))))',
+           f'  (property "Value" {q(s.name)} (at 0 {y0 - 1.27:.4f} 0) (effects (font (size {FONT} {FONT}))))',
+           f'  (property "Footprint" "" (at 0 0 0) (effects (font (size {FONT} {FONT})) hide))',
+           f'  (property "Datasheet" "~" (at 0 0 0) (effects (font (size {FONT} {FONT})) hide))']
     if s.desc:
         out.append(f'  (property "ki_description" {q(s.desc)} (at 0 0 0) (effects (font (size {FONT} {FONT})) hide))')
-    out.append(f'  (symbol {q(s.name + "_0_1")}')
-    for gline in _graphics(s):
-        out.append("    " + gline)
+    short = s.name
+    out.append(f'  (symbol {q(short + "_0_1")}')
+    for p in s.prims:
+        out.append("    " + _prim_text(p))
     out.append("  )")
-    out.append(f'  (symbol {q(s.name + "_1_1")}')
+    out.append(f'  (symbol {q(short + "_1_1")}')
     for p in s.pins:
         for i, num in enumerate(p.nums):
-            et = p.etype
-            if i > 0 and et not in ("no_connect",):
-                et = "passive"  # stacked duplicates
-            length = PIN_LEN if s.kind == "box" else (2.54 if s.kind != "TP" else 1.27)
-            out.append(f'    (pin {et} line (at {p.x} {p.y} {p.angle}) (length {length})'
+            et = p.etype if (i == 0 or p.etype == "no_connect") else "passive"
+            length = PIN_LEN if s.kind != "TP" else 1.27
+            out.append(f'    (pin {et} line (at {p.x:.4f} {p.y:.4f} {p.angle}) (length {length})'
                        f' (name {q(p.name)} (effects (font (size {FONT} {FONT}))))'
                        f' (number {q(num)} (effects (font (size {FONT} {FONT})))))')
     out.append("  )")
     out.append(")")
     return "\n".join(indent + l for l in out)
+
+
+POWER_EXT = {"rail": 2.286, "gnd": 2.286, "hot": 2.794}
+_PXF = {"up": lambda x, y: (x, y), "down": lambda x, y: (x, -y),
+        "right": lambda x, y: (y, x), "left": lambda x, y: (-y, x)}
+
+
+def power_value_pos(style: str, d: str):
+    """Value text offset (symbol space, y up) and justification for a power symbol."""
+    e = POWER_EXT[style] + 1.6
+    return {"up": ((0, e), "center"), "down": ((0, -e), "center"),
+            "right": ((e - 0.6, 0), "left"), "left": ((-e + 0.6, 0), "right")}[d]
+
+
+def power_lib_text(net: str, style: str, d: str = "up", indent="    "):
+    """Power symbol pointing in direction d, whose hidden pin makes a global net named `net`."""
+    short = "PWR_" + "".join(c if c.isalnum() else "_" for c in net) + "_" + d
+    if style == "hot":
+        prims = [[(0, 0), (0, 1.27)], [(-1.524, 1.27), (1.524, 1.27), (0, 2.794), (-1.524, 1.27)]]
+        fills = ["none", "outline"]
+    elif style == "gnd":
+        prims = [[(0, 0), (0, 1.27)], [(-1.524, 1.27), (1.524, 1.27)], [(-0.889, 1.778), (0.889, 1.778)],
+                 [(-0.254, 2.286), (0.254, 2.286)]]
+        fills = ["none"] * 4
+    else:
+        prims = [[(0, 0), (0, 1.27)], [(-0.762, 1.27), (0, 2.286), (0.762, 1.27), (-0.762, 1.27)]]
+        fills = ["none", "outline"]
+    f = _PXF[d]
+    g = ["(polyline (pts " + " ".join("(xy %.4f %.4f)" % f(x, y) for x, y in pts) +
+         f") (stroke (width 0.254) (type default)) (fill (type {fl})))" for pts, fl in zip(prims, fills)]
+    (vx, vy), just = power_value_pos(style, d)
+    jj = "" if just == "center" else f" (justify {just})"
+    out = [f"(symbol {q('pwr:' + short)} (power) (pin_names (offset 0)) (in_bom yes) (on_board yes)",
+           f'  (property "Reference" "#PWR" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))',
+           f'  (property "Value" {q(net)} (at {vx:.4f} {vy:.4f} 0) (effects (font (size 1.27 1.27)){jj}))',
+           f'  (property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))',
+           f'  (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))',
+           f"  (symbol {q(short + '_0_1')}"] + ["    " + x for x in g] + ["  )",
+           f"  (symbol {q(short + '_1_1')}",
+           f'    (pin power_in line (at 0 0 90) (length 0) hide (name {q(net)} (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))',
+           "  )", ")"]
+    return "\n".join(indent + l for l in out), "pwr:" + short
 
 
 PWR_FLAG_LIB = """    (symbol "power:PWR_FLAG" (power) (pin_numbers hide) (pin_names (offset 0) hide) (in_bom yes) (on_board yes)
@@ -240,17 +320,14 @@ class Part:
     ref: str
     sym: SymDef
     value: str
-    conn: dict                      # pin number -> net name or "NC"
+    conn: dict
     footprint: str = ""
     lcsc: str = ""
     mpn: str = ""
     mfr: str = ""
     note: str = ""
     dnp: bool = False
-    verified: str = ""              # "yes" if LCSC number checked this session
-
-    def pin_net(self, num):
-        return self.conn.get(num)
+    verified: str = ""
 
 
 @dataclass
@@ -262,6 +339,7 @@ class Block:
 
 @dataclass
 class Sheet:
+    """One column of blocks on the board's single sheet."""
     name: str
     file: str
     title: str
@@ -275,245 +353,15 @@ class Project:
     title: str
     sheets: list[Sheet]
     root_notes: str = ""
-    warning: str = ""               # second title-block comment
-
-
-# --------------------------------------------------------------------------
-# Writer
-# --------------------------------------------------------------------------
-
-PAPERS = [("A4", 297, 210), ("A3", 420, 297), ("A2", 594, 420), ("A1", 841, 594)]
-
-
-def _label_len(net: str, is_global: bool) -> float:
-    return len(net) * CHAR_W + (3.81 if is_global else 1.27)
-
-
-class Writer:
-    def __init__(self, proj: Project, outdir: str, date: str, rev: str):
-        self.p = proj
-        self.out = outdir
-        self.date = date
-        self.rev = rev
-        self.root_uuid = new_uuid(proj.name + "/root")
-        # nets used on more than one sheet become global labels
-        uses: dict[str, set] = {}
-        for sh in proj.sheets:
-            for b in sh.blocks:
-                for part in b.parts:
-                    for n in part.conn.values():
-                        if n and n != "NC":
-                            uses.setdefault(n, set()).add(sh.file)
-            for n in sh.flags:
-                uses.setdefault(n, set()).add(sh.file)
-        self.global_nets = {n for n, s in uses.items() if len(s) > 1}
-
-    # ---- sheets ---------------------------------------------------------
-    def _syms(self, sheet: Sheet) -> list[SymDef]:
-        seen = {}
-        for b in sheet.blocks:
-            for part in b.parts:
-                seen[part.sym.name] = part.sym
-        return list(seen.values())
-
-    def _layout(self, sheet: Sheet):
-        """Place parts in rows, block by block. Returns placements, texts and paper."""
-        for paper, pw, ph in PAPERS:
-            margin = 15.24
-            usable_w = pw - 2 * margin
-            x0, y = margin, margin + 10.16
-            placements, texts = [], []
-            ok = True
-            for b in sheet.blocks:
-                texts.append((x0, y, b.title, 2.0, True))
-                y += 3.81
-                if b.notes:
-                    texts.append((x0, y, b.notes, 1.27, False))
-                    y += 2.1 * (b.notes.count("\n") + 1) + 1.27
-                x = x0
-                row_h = 0.0
-                y += 5.08
-                for part in b.parts:
-                    s = part.sym
-                    lw = rw = 0.0
-                    for pin in s.pins:
-                        net = part.conn.get(pin.nums[0])
-                        if not net or net == "NC":
-                            continue
-                        L = _label_len(net, net in self.global_nets)
-                        if pin.side == "L":
-                            lw = max(lw, L)
-                        else:
-                            rw = max(rw, L)
-                    body_w = 2 * (s.w2 + PIN_LEN)
-                    cell_w = lw + body_w + rw + 5.08
-                    h_above = s.body_top + 3.81
-                    h_below = -s.body_bot + 3.81
-                    cell_h = h_above + h_below + 2.54
-                    if x + cell_w > x0 + usable_w and x > x0:
-                        x = x0
-                        y += row_h
-                        row_h = 0.0
-                    cx = snap(x + lw + s.w2 + PIN_LEN)
-                    cy = snap(y + h_above)
-                    placements.append((part, cx, cy))
-                    x += cell_w
-                    row_h = max(row_h, cell_h)
-                y += row_h + 5.08
-            if y > ph - margin - 25:  # leave room for the title block
-                ok = False
-            if ok:
-                return paper, placements, texts
-        raise RuntimeError(f"sheet {sheet.name} does not fit on A1")
-
-    def _sheet_path(self, idx: int) -> tuple[str, str]:
-        sh_uuid = new_uuid(f"{self.p.name}/sheet/{self.p.sheets[idx].file}")
-        return sh_uuid, f"/{self.root_uuid}/{sh_uuid}"
-
-    def write_sheet(self, idx: int) -> str:
-        sheet = self.p.sheets[idx]
-        sh_uuid, path = self._sheet_path(idx)
-        paper, placements, texts = self._layout(sheet)
-        L = []
-        L.append(f'(kicad_sch (version 20230121) (generator eeschema)')
-        L.append(f'  (uuid {new_uuid(self.p.name + "/" + sheet.file)})')
-        L.append(f'  (paper "{paper}")')
-        L.append(self._title_block(sheet.title))
-        L.append("  (lib_symbols")
-        for s in self._syms(sheet):
-            L.append(sym_lib_text(s))
-        if sheet.flags:
-            L.append(PWR_FLAG_LIB)
-        L.append("  )")
-        for (tx, ty, txt, size, bold) in texts:
-            b = " bold" if bold else ""
-            L.append(f'  (text {q(txt)} (at {snap(tx)} {snap(ty)} 0) (effects (font (size {size} {size}){b}) (justify left top)) (uuid {new_uuid()}))')
-        nc_points = []
-        for part, cx, cy in placements:
-            L.append(self._symbol_instance(part, cx, cy, path))
-            for pin in part.sym.pins:
-                net = part.conn.get(pin.nums[0])
-                px, py = snap(cx + pin.x), snap(cy - pin.y)
-                if net is None:
-                    if pin.etype == "no_connect":
-                        continue
-                    raise RuntimeError(f"{part.ref} pin {pin.nums[0]} ({pin.name}) has no net; use 'NC'")
-                if net == "NC":
-                    if pin.etype != "no_connect":
-                        nc_points.append((px, py))
-                    continue
-                L.append(self._label(net, px, py, pin.side))
-        for (px, py) in nc_points:
-            L.append(f"  (no_connect (at {px} {py}) (uuid {new_uuid()}))")
-        # PWR_FLAGs in the bottom-left corner, each on a short labelled stub
-        fx = 20.32
-        fy = snap({"A4": 210, "A3": 297, "A2": 420, "A1": 594}[paper] - 20.32)
-        for i, net in enumerate(sheet.flags):
-            x = snap(fx + i * 25.4)
-            ref = f"#FLG0{idx + 1}{i + 1:02d}"
-            L.append(f'  (symbol (lib_id "power:PWR_FLAG") (at {x} {fy} 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid {new_uuid(self.p.name + ref)})')
-            L.append(f'    (property "Reference" "{ref}" (at {x} {fy - 1.905} 0) (effects (font (size 1.27 1.27)) hide))')
-            L.append(f'    (property "Value" "PWR_FLAG" (at {x} {fy - 3.81} 0) (effects (font (size 1.27 1.27))))')
-            L.append(f'    (property "Footprint" "" (at {x} {fy} 0) (effects (font (size 1.27 1.27)) hide))')
-            L.append(f'    (property "Datasheet" "~" (at {x} {fy} 0) (effects (font (size 1.27 1.27)) hide))')
-            L.append(f'    (pin "1" (uuid {new_uuid()}))')
-            L.append(f'    (instances (project {q(self.p.name)} (path {q(path)} (reference "{ref}") (unit 1))))')
-            L.append("  )")
-            L.append(self._label(net, x, fy, "R"))
-        L.append(")")
-        return "\n".join(L) + "\n"
-
-    def _title_block(self, title: str) -> str:
-        return (f'  (title_block (title {q(title)}) (date "{self.date}") (rev "{self.rev}") '
-                f'(company "Aether Labs") (comment 1 "Smart Wall Socket. DRAFT for engineering review, not a release.") '
-                f'(comment 2 {q(self.p.warning)}))')
-
-    def _symbol_instance(self, part: Part, cx: float, cy: float, path: str) -> str:
-        s = part.sym
-        dnp = "yes" if part.dnp else "no"
-        bom = "no" if part.dnp else "yes"
-        u = new_uuid(f"{self.p.name}/{part.ref}")
-        ry = snap(cy - s.body_top - 1.27)
-        vy = snap(cy - s.body_bot + 2.54)
-        val = part.value + (" (DNP)" if part.dnp else "")
-        props = [
-            ("Reference", part.ref, cx, ry, False),
-            ("Value", val, cx, vy, False),
-            ("Footprint", part.footprint, cx, cy, True),
-            ("Datasheet", "~", cx, cy, True),
-            ("LCSC", part.lcsc, cx, cy, True),
-            ("MPN", part.mpn, cx, cy, True),
-            ("Manufacturer", part.mfr, cx, cy, True),
-            ("Notes", part.note, cx, cy, True),
-        ]
-        L = [f'  (symbol (lib_id {q(s.lib_id)}) (at {cx} {cy} 0) (unit 1) (in_bom {bom}) (on_board yes) (dnp {dnp}) (uuid {u})']
-        for name, v, x, y, hide in props:
-            h = " hide" if hide else ""
-            L.append(f'    (property {q(name)} {q(v)} (at {x} {y} 0) (effects (font (size {FONT} {FONT})){h}))')
-        for pin in s.pins:
-            for num in pin.nums:
-                L.append(f'    (pin {q(num)} (uuid {new_uuid(f"{self.p.name}/{part.ref}/{num}")}))')
-        L.append(f'    (instances (project {q(self.p.name)} (path {q(path)} (reference {q(part.ref)}) (unit 1))))')
-        L.append("  )")
-        return "\n".join(L)
-
-    def _label(self, net: str, x: float, y: float, side: str) -> str:
-        ang = 180 if side == "L" else 0
-        just = "right" if side == "L" else "left"
-        if net in self.global_nets:
-            return (f'  (global_label {q(net)} (shape passive) (at {x} {y} {ang}) (fields_autoplaced) '
-                    f'(effects (font (size {FONT} {FONT})) (justify {just})) (uuid {new_uuid()}) '
-                    f'(property "Intersheetrefs" "${{INTERSHEET_REFS}}" (at {x} {y} 0) (effects (font (size 1.27 1.27)) hide)))')
-        return (f'  (label {q(net)} (at {x} {y} {ang}) (fields_autoplaced) '
-                f'(effects (font (size {FONT} {FONT})) (justify {just} bottom)) (uuid {new_uuid()}))')
-
-    def write_root(self) -> str:
-        L = [f'(kicad_sch (version 20230121) (generator eeschema)',
-             f'  (uuid {self.root_uuid})', '  (paper "A3")', self._title_block(self.p.title),
-             "  (lib_symbols)"]
-        x, y = 25.4, 38.1
-        for i, sh in enumerate(self.p.sheets):
-            sh_uuid, _ = self._sheet_path(i)
-            w, h = 76.2, 25.4
-            L.append(f'  (sheet (at {x} {y}) (size {w} {h}) (fields_autoplaced) (stroke (width 0.1524) (type solid)) '
-                     f'(fill (color 0 0 0 0.0000)) (uuid {sh_uuid})')
-            L.append(f'    (property "Sheetname" {q(sh.name)} (at {x} {snap(y - 0.635)} 0) (effects (font (size 1.27 1.27)) (justify left bottom)))')
-            L.append(f'    (property "Sheetfile" {q(sh.file)} (at {x} {snap(y + h + 0.635)} 0) (effects (font (size 1.27 1.27)) (justify left top)))')
-            L.append(f'    (instances (project {q(self.p.name)} (path "/{self.root_uuid}" (page "{i + 2}"))))')
-            L.append("  )")
-            x += 91.44
-            if x > 330:
-                x = 25.4
-                y += 45.72
-        if self.p.root_notes:
-            L.append(f'  (text {q(self.p.root_notes)} (at 25.4 {snap(y + 45.72)} 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid {new_uuid()}))')
-        L.append('  (sheet_instances (path "/" (page "1")))')
-        L.append(")")
-        return "\n".join(L) + "\n"
-
-    def write_all(self):
-        os.makedirs(self.out, exist_ok=True)
-        with open(os.path.join(self.out, self.p.name + ".kicad_sch"), "w") as f:
-            f.write(self.write_root())
-        for i, sh in enumerate(self.p.sheets):
-            with open(os.path.join(self.out, sh.file), "w") as f:
-                f.write(self.write_sheet(i))
-        pro = {"meta": {"filename": self.p.name + ".kicad_pro", "version": 1},
-               "sheets": [[self.root_uuid, ""]] + [[self._sheet_path(i)[0], sh.name] for i, sh in enumerate(self.p.sheets)]}
-        with open(os.path.join(self.out, self.p.name + ".kicad_pro"), "w") as f:
-            json.dump(pro, f, indent=2)
-        with open(os.path.join(self.out, "sym-lib-table"), "w") as f:
-            f.write('(sym_lib_table\n  (lib (name "sws")(type "KiCad")(uri "${KIPRJMOD}/../lib/sws.kicad_sym")(options "")(descr "Aether Labs Smart Wall Socket symbols"))\n)\n')
-        with open(os.path.join(self.out, "fp-lib-table"), "w") as f:
-            f.write('(fp_lib_table\n  (lib (name "sws")(type "KiCad")(uri "${KIPRJMOD}/../lib/sws.pretty")(options "")(descr "Placeholder footprints, drawn at layout"))\n)\n')
+    warning: str = ""
+    rails: dict = field(default_factory=dict)        # net -> "gnd" or "rail"
+    barrier_after: int | None = None                 # draw the barrier after this column
 
 
 def write_symbol_library(symdefs: list[SymDef], path: str):
-    """Project library so the symbols can be edited and reused in KiCad."""
     L = ['(kicad_symbol_lib (version 20220914) (generator kicad_gen_py)']
     for s in sorted(symdefs, key=lambda s: s.name):
-        txt = sym_lib_text(s, indent="  ")
-        L.append(txt.replace(q(s.lib_id), q(s.name), 1))
+        L.append(sym_lib_text(s, indent="  ", lib_name=s.name))
     L.append(")")
     with open(path, "w") as f:
         f.write("\n".join(L) + "\n")

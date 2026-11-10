@@ -391,12 +391,14 @@ REAR = Project(
     name="sws-rear", title="Smart Wall Socket EVT1, rear board",
     warning="Hot side is referenced to LIVE (L_BUS). Treat every hot-side net as mains.",
     sheets=[
-        Sheet("Hot side", "hot_side.kicad_sch", "Rear board: hot side (mains referenced)",
-              [mains, feed, hotsup, meter, polarity], flags=["L_BUS"]),
-        Sheet("Barrier crossing", "crossing.kicad_sch", "Rear board: parts that bridge the reinforced barrier",
-              [iso, ld03, relays]),
-        Sheet("Safe zone", "safe_zone.kicad_sch", "Rear board: safe zone (SELV)", [drivers, safe_misc]),
+        Sheet("Hot side", "", "Mains referenced. Hot-side ground = L_BUS = LIVE.",
+              [mains, feed, hotsup], flags=["L_BUS"]),
+        Sheet("Hot side, sensing", "", "Metering and wiring checks, all mains referenced.", [meter, polarity]),
+        Sheet("Barrier crossing", "", "The only parts that bridge the barrier.", [iso, ld03, relays]),
+        Sheet("Safe zone", "", "SELV.", [drivers, safe_misc]),
     ],
+    rails={"L_BUS": "hot", "GND": "gnd", "+3V3_HOT": "rail", "+3V3_ISO": "rail", "+5V": "rail"},
+    barrier_after=1,
     root_notes=(
         "REAR BOARD, EVT1 DRAFT FOR REVIEW\n"
         "2 layers, 2 oz. One reinforced barrier: 8.0 mm creepage and clearance, crossed only by U5, PS1, K1, K2.\n"
@@ -535,11 +537,11 @@ FRONT = Project(
     name="sws-front", title="Smart Wall Socket EVT1, front board",
     warning="SELV only. Connects to the rear board's safe zone through J101.",
     sheets=[
-        Sheet("MCU and power", "mcu_power.kicad_sch", "Front board: 3.3 V, ESP32-C6, test pads",
+        Sheet("Power and processor", "", "3.3 V buck, ESP32-C6, programming pads.",
               [front_pwr, front_mcu, front_tp], flags=["+5V", "GND", "+3V3"]),
-        Sheet("Touch, NFC, light", "hmi.kicad_sch", "Front board: touch keys, NFC tag, light lines",
-              [touch, nfc, leds], flags=["LED_5V"]),
+        Sheet("User interface", "", "Touch keys, NFC tag, light lines.", [touch, nfc, leds], flags=["LED_5V"]),
     ],
+    rails={"GND": "gnd", "+5V": "rail", "+3V3": "rail", "LED_5V": "rail"},
     root_notes=(
         "FRONT BOARD, EVT1 DRAFT FOR REVIEW\n"
         "Entirely SELV. 4 layers for the ESP32's RF ground; antenna keep-out at the board edge under the faceplate rim.\n"

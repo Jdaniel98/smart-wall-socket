@@ -1,0 +1,17 @@
+{
+  "meta": {"name": "paper", "version": 5},
+  "schematic": {
+    "background": "rgb(242, 222, 176)",
+    "wire": "rgb(60, 45, 30)", "bus": "rgb(60, 45, 30)", "junction": "rgb(60, 45, 30)",
+    "component_outline": "rgb(60, 45, 30)", "component_body": "rgba(0, 0, 0, 0.000)",
+    "pin": "rgb(60, 45, 30)", "pin_name": "rgb(60, 45, 30)", "pin_number": "rgb(110, 90, 65)",
+    "reference": "rgb(60, 45, 30)", "value": "rgb(60, 45, 30)", "fields": "rgb(110, 90, 65)",
+    "label_local": "rgb(60, 45, 30)", "label_global": "rgb(60, 45, 30)", "label_hier": "rgb(60, 45, 30)",
+    "net_name": "rgb(60, 45, 30)", "no_connect": "rgb(60, 45, 30)", "note": "rgb(60, 45, 30)",
+    "power": "rgb(60, 45, 30)", "sheet": "rgb(60, 45, 30)", "worksheet": "rgb(60, 45, 30)",
+    "notes_background": "rgba(0, 0, 0, 0.000)", "shadow": "rgba(0, 0, 0, 0.000)",
+    "sheet_background": "rgba(0, 0, 0, 0.000)", "sheet_name": "rgb(60, 45, 30)",
+    "sheet_filename": "rgb(60, 45, 30)", "sheet_fields": "rgb(60, 45, 30)", "sheet_label": "rgb(60, 45, 30)",
+    "hidden": "rgb(150, 130, 100)", "brightened": "rgb(60, 45, 30)", "dnp_marker": "rgb(160, 40, 30)"
+  }
+}
