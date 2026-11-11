@@ -800,9 +800,17 @@ def write_project(proj: Project, outdir: str, date: str, rev: str):
 
     with open(os.path.join(outdir, proj.name + ".kicad_sch"), "w") as f:
         f.write("\n".join(L) + "\n")
-    with open(os.path.join(outdir, proj.name + ".kicad_pro"), "w") as f:
-        json.dump({"meta": {"filename": proj.name + ".kicad_pro", "version": 1},
-                   "sheets": [[root, ""]]}, f, indent=2)
+    # merge into an existing project file: KiCad keeps the board's design settings there
+    pro_path = os.path.join(outdir, proj.name + ".kicad_pro")
+    pro = {}
+    if os.path.exists(pro_path):
+        with open(pro_path) as f:
+            pro = json.load(f)
+    pro.setdefault("meta", {}).update({"filename": proj.name + ".kicad_pro"})
+    pro["meta"].setdefault("version", 1)
+    pro["sheets"] = [[root, ""]]
+    with open(pro_path, "w") as f:
+        json.dump(pro, f, indent=2)
     with open(os.path.join(outdir, "sym-lib-table"), "w") as f:
         f.write('(sym_lib_table\n  (lib (name "sws")(type "KiCad")(uri "${KIPRJMOD}/../lib/sws.kicad_sym")(options "")(descr "Aether Labs Smart Wall Socket symbols"))\n)\n')
     with open(os.path.join(outdir, "fp-lib-table"), "w") as f:

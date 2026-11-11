@@ -224,6 +224,11 @@
     "legacy_lib_dir": "",
     "legacy_lib_list": []
   },
-  "sheets": [],
+  "sheets": [
+    [
+      "1b180cc2-0488-5515-9f8a-b186a6fbb761",
+      ""
+    ]
+  ],
   "text_variables": {}
 }
