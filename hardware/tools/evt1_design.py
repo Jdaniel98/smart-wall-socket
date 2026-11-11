@@ -50,8 +50,7 @@ FP = {
     "L_RAD": "Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP",
     "LNKSO8C": "Package_SO:PowerIntegrations_SO-8C",
     "L4018": "Inductor_SMD:L_Bourns-SRN4018",
-    "HDR2x7": "Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD",
-    "SKT2x7": "Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD",
+    "FPC14": "Connector_FFC-FPC:TE_1-84952-4_1x14-1MP_P1.0mm_Horizontal",
     "TP": "TestPoint:TestPoint_Pad_D1.5mm",
     # Placeholders, drawn at layout once the part is confirmed (see review notes)
     "TERM": "sws:Mains_Terminal_3x2.5mm2",
@@ -149,9 +148,9 @@ HDR_PINS = [
     ("7", "ZX"), ("8", "POL_A"), ("9", "POL_B"), ("10", "ALARM"), ("11", "RELAY1"), ("12", "RELAY2"),
     ("13", "NTC1"), ("14", "NTC2"),
 ]
-S_HDR = box("Conn_B2B_2x07", [(n, f, "passive") for n, f in HDR_PINS if int(n) % 2],
+S_HDR = box("Conn_FFC_1x14", [(n, f, "passive") for n, f in HDR_PINS if int(n) % 2],
             [(n, f, "passive") for n, f in HDR_PINS if not int(n) % 2], ref="J",
-            desc="Board-to-board, 2 x 7, 1.27 mm. Same pin map on both boards.")
+            desc="Board-to-board FPC connector, 14-way, 1.0 mm, for a Type A FFC. Same pin map on both boards.")
 HDR_CONN = {n: f for n, f in HDR_PINS}
 
 S_TLV = box("TLV62569DBV", [("4", "VIN", "power_in"), ("1", "EN", "input")],
@@ -420,7 +419,7 @@ safe_misc = Block(
         C("C21", "1u", "+3V3_ISO", "GND", **C1U),
         Part("TH1", S_NTC, "10k B3950 1%", {"1": "NTC1", "2": "GND"}, FP["R0603"], "", "", "", "Against relay K1"),
         Part("TH2", S_NTC, "10k B3950 1%", {"1": "NTC2", "2": "GND"}, FP["R0603"], "", "", "", "Against relay K2"),
-        U("J4", S_HDR, "B2B header 2x7 1.27mm", dict(HDR_CONN), "HDR2x7"),
+        U("J4", S_HDR, "FPC 14P 1.0mm bottom contact", dict(HDR_CONN), "FPC14"),
         C("C22", "10u 25V", "+5V", "GND", **C10U_0805),
     ])
 
@@ -452,7 +451,7 @@ front_pwr = Block(
     "1. Board-to-board socket and 3.3 V buck",
     "TLV62569: Vout = 0.6 V x (1 + 453k/100k) = 3.32 V. PFM at light load keeps standby low.",
     [
-        U("J101", S_HDR, "B2B socket 2x7 1.27mm", dict(HDR_CONN), "SKT2x7"),
+        U("J101", S_HDR, "FPC 14P 1.0mm bottom contact", dict(HDR_CONN), "FPC14"),
         C("C101", "22u 10V", "+5V", "GND", **C22U_0805),
         U("U101", S_TLV, "TLV62569DBVR", {"4": "+5V", "1": "+5V", "3": "BUCK_SW", "5": "BUCK_FB", "2": "GND"},
           "SOT23-5", lcsc="C141836", mfr="TI", ver="yes"),
@@ -582,7 +581,7 @@ FRONT = Project(
     root_notes=(
         "FRONT BOARD, EVT1 DRAFT FOR REVIEW\n"
         "Entirely SELV. 4 layers for the ESP32's RF ground; antenna keep-out at the board edge under the faceplate rim.\n"
-        "Connects to the rear board's safe zone only, through J101 (2 x 7, 1.27 mm)."),
+        "Connects to the rear board's safe zone only, through J101 (14-way, 1.0 mm FFC)."),
 )
 
 PROJECTS = [REAR, FRONT]
@@ -649,14 +648,14 @@ ASSIGN = {
     "C19": ("C264054", "EEE-FK1A151P", "Panasonic", "150u 10V 105C low ESR", "CP6358", "yes"),
     "TH1": ("C47118797", "CMFA103F3950HANT", "FH", None, None, "yes"),
     "TH2": ("C47118797", "CMFA103F3950HANT", "FH", None, None, "yes"),
-    "J4":  ("C3975190", "PZ127-2-07-S", "HCTL", None, None, "yes"),
+    "J4":  ("C574848", "1-84952-4", "TE Connectivity", None, None, "yes"),
     "J1":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
     "J2":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
     "J3":  ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
     "TF1": ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
     "TF2": ("", "", "", None, None, "src:mechanical, chosen with the enclosure"),
     # front
-    "J101": ("C3975133", "PM127-2-07-S-4.3", "HCTL", None, None, "yes"),
+    "J101": ("C574848", "1-84952-4", "TE Connectivity", None, None, "yes"),
     "L101": ("C340367", "YNR4018-2R2M", "YJYCOIN", "2.2uH 1.65A 45mR shielded", None, "yes"),
     "R101": ("C667826", "TD03G4533FT", "FH", None, None, "yes"),
     "R106": ("C328421", "PTFR0603B10K0P9", "RESI", None, None, "yes"),
