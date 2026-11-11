@@ -1,0 +1,35 @@
+* IEC 61000-4-5 1.2/50-8/20 combination wave generator check (open and short circuit)
+.param U=1000
+Cc1 c1 0 7.76u IC={U}
+Rs1a c1 0 14.8
+Rm1 c1 m1 1.05
+Lr1 m1 o1 9.74u
+Rs2a o1 0 23.3
+Cc2 c2 0 7.76u IC={U}
+Rs1b c2 0 14.8
+Rm2 c2 m2 1.05
+Lr2 m2 o2 9.74u
+Rs2b o2 0 23.3
+Vsc o2 0 0
+.tran 0.02u 150u UIC
+.control
+run
+meas tran vpk MAX v(o1)
+meas tran ipk MAX i(Vsc)
+let v90 = 0.9*vpk
+let v30 = 0.3*vpk
+let v50 = 0.5*vpk
+meas tran t30 WHEN v(o1)=v30 RISE=1
+meas tran t90 WHEN v(o1)=v90 RISE=1
+meas tran tv50r WHEN v(o1)=v50 RISE=1
+meas tran tv50f WHEN v(o1)=v50 FALL=1
+let i10 = 0.1*ipk
+let i90 = 0.9*ipk
+let i50 = 0.5*ipk
+meas tran ti10 WHEN i(Vsc)=i10 RISE=1
+meas tran ti90 WHEN i(Vsc)=i90 RISE=1
+meas tran ti50r WHEN i(Vsc)=i50 RISE=1
+meas tran ti50f WHEN i(Vsc)=i50 FALL=1
+print 1.67*(t90-t30) (tv50f-tv50r) 1.25*(ti90-ti10) 1.18*(ti50f-ti50r) vpk/ipk
+.endc
+.end

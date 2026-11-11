@@ -25,3 +25,6 @@ fctry.csv
 # Assistant config stays local
 CLAUDE.md
 .claude/
+
+# Python
+__pycache__/

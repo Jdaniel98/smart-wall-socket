@@ -25,7 +25,8 @@ A revival and full redesign of the "Keep" smart socket that won the 2021 KNUST E
 | [`docs/protocol.md`](docs/protocol.md) | Device ↔ cloud MQTT contract |
 | [`docs/proto0-bench-guide.md`](docs/proto0-bench-guide.md) | Safety rules, flashing, pairing, calibration, test plan |
 | [`docs/adr/`](docs/adr/) | Decision records |
-| `hardware/`, `services/`, `apps/`, `intelligence/` | Coming with EVT and the software phases |
+| [`hardware/`](hardware/) | EVT1 KiCad schematics (draft for review), generator and netlist checks |
+| `services/`, `apps/`, `intelligence/` | Coming with the software phases |
 
 ## Safety
 
