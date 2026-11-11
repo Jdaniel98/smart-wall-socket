@@ -1,0 +1,165 @@
+{
+ "parts": {
+  "faceplate": {
+   "volume_cm3": 30.58,
+   "bbox_mm": [
+    146.0,
+    86.0,
+    9.0
+   ]
+  },
+  "inner_frame": {
+   "volume_cm3": 14.54,
+   "bbox_mm": [
+    141.0,
+    81.0,
+    21.0
+   ]
+  },
+  "carrier_left": {
+   "volume_cm3": 24.38,
+   "bbox_mm": [
+    41.0,
+    46.0,
+    22.5
+   ]
+  },
+  "carrier_right": {
+   "volume_cm3": 24.38,
+   "bbox_mm": [
+    41.0,
+    46.0,
+    22.5
+   ]
+  },
+  "light_guide_left": {
+   "volume_cm3": 0.06,
+   "bbox_mm": [
+    24.0,
+    3.0,
+    2.5
+   ]
+  },
+  "light_guide_right": {
+   "volume_cm3": 0.06,
+   "bbox_mm": [
+    24.0,
+    3.0,
+    2.5
+   ]
+  },
+  "rear_cover": {
+   "volume_cm3": 15.49,
+   "bbox_mm": [
+    128.0,
+    68.0,
+    5.8
+   ]
+  }
+ },
+ "clashes": [],
+ "checks": [
+  {
+   "name": "plate inner face above front board",
+   "value": 0.6,
+   "limit": ">= 0.5",
+   "ok": true
+  },
+  {
+   "name": "LD03 top below the frame top",
+   "value": 0.4,
+   "limit": ">= 0.3 (frame opening clears it)",
+   "ok": true
+  },
+  {
+   "name": "LD03 top to front board B-side parts (ESP32 not over it)",
+   "value": 0.8,
+   "limit": ">= 0.5",
+   "ok": true
+  },
+  {
+   "name": "LD03 top to front board B side (no parts over it)",
+   "value": 3.2,
+   "limit": ">= 3.0",
+   "ok": true
+  },
+  {
+   "name": "relay top below the frame",
+   "value": 0.3,
+   "limit": ">= 0.3",
+   "ok": true
+  },
+  {
+   "name": "earth pin tip above the rear board",
+   "value": 2.3,
+   "limit": ">= 1.5",
+   "ok": true
+  },
+  {
+   "name": "L/N pin tip above the rear board",
+   "value": 7.3,
+   "limit": ">= 1.5",
+   "ok": true
+  },
+  {
+   "name": "cable space behind the rear cover",
+   "value": 11.4,
+   "limit": ">= 10",
+   "ok": true
+  },
+  {
+   "name": "terminal block above the box back",
+   "value": 6.4,
+   "limit": ">= 5 (wire bend)",
+   "ok": true
+  },
+  {
+   "name": "fixing screw tip above the box back",
+   "value": 12.0,
+   "limit": ">= 2",
+   "ok": true
+  },
+  {
+   "name": "rear board inside the box envelope (x)",
+   "value": 1.0,
+   "limit": ">= 0",
+   "ok": true
+  },
+  {
+   "name": "rear board inside the box envelope (y)",
+   "value": 1.0,
+   "limit": ">= 0",
+   "ok": true
+  },
+  {
+   "name": "carrier 1 inside the box envelope (x)",
+   "value": 14.0,
+   "limit": ">= 0",
+   "ok": true
+  },
+  {
+   "name": "carrier 2 inside the box envelope (x)",
+   "value": 14.0,
+   "limit": ">= 0",
+   "ok": true
+  },
+  {
+   "name": "safe island stem to the nearest contact pad (x)",
+   "value": 8.15,
+   "limit": ">= 8.0",
+   "ok": true
+  },
+  {
+   "name": "safe island bottom bar to the contact pads (y)",
+   "value": 9.7,
+   "limit": ">= 8.0",
+   "ok": true
+  },
+  {
+   "name": "safe island to the nearest hot copper (outlet 1 L contact pad)",
+   "value": 8.15,
+   "limit": ">= 8.0",
+   "ok": true
+  }
+ ]
+}

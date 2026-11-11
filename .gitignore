@@ -28,3 +28,7 @@ CLAUDE.md
 
 # Python
 __pycache__/
+
+# Mechanical: render meshes are rebuilt by enclosure.py
+hardware/mech/out/mesh.pkl
+*.kicad_prl

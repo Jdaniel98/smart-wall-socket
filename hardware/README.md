@@ -12,6 +12,7 @@ EVT1 schematics for the Smart Wall Socket. **Draft for engineering review, not a
 | `tools/layout.py` | Places each block in its frame and draws the wires with a small grid router |
 | `tools/gen.py` | Writes the KiCad files; PDFs come from `kicad-cli` |
 | `tools/footprints.py` | Writes the drawn footprints into `evt1/lib/sws.pretty` (see its README for sources) |
+| `mech/` | Enclosure v0.1 and board outlines v0.1 from one parameter file (`mech/params.py`); see `mech/README.md` |
 | `tools/kicad-theme-paper.json` | Paper colour theme used for the PDFs |
 | `tools/verify.py` | Checks the exported netlist against the design and runs the safety rules |
 

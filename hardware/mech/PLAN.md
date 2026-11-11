@@ -70,20 +70,23 @@ The contacts run from just behind the shutters (about +6) down to the rear board
 
 - **Outline:** 128 × 68 mm, notched at the two fixing lugs.
 - **Outlet zones:** centres at x = ±34, each roughly 34 × 36 mm (to confirm against the donor). Nothing tall goes there, because the contacts and carriers sit on top.
-- **Centre strip (x −15 to +15):**
-  - LD03 at the top;
-  - K1 and K2 below it, standing vertically, coil ends toward the safe zone;
-  - ISO7761 on the barrier, with a 1 mm routed slot under it.
-- **Hot side:** the busbar, shunts, BL0939, LNK3204 supply and polarity check, in the end strips and under the outlets on the back face.
-- **Safe zone:** a band holding the relay drivers, NTCs (against the relays), the isolator's safe side and the link to the front board. Every hot-to-safe distance is ≥8 mm creepage and clearance, checked in KiCad by net class.
+- **Zoning v0 (worked out in v0.1, section 11):** one T-shaped safe island; everything else is hot.
+  - **Stem:** x −12 to +12, from the bottom bar up to the LD03's DC pins.
+  - **Bottom bar:** x −24 to +24, y −34 to −18.
+- **LD03:** top centre, AC pins up into the hot top strip, DC pins down into the stem.
+- **K1 and K2:** lying in the bottom strip, coil ends in the bar, contact ends 9 mm outside it.
+- **ISO7761 (U5):** on the back face, straddling the stem's left edge, with a 1 mm routed slot under it.
+- **J4:** in the stem.
+- **Hot side:** the busbar, shunts, BL0939, LNK3204 supply and polarity check, in the end strips, the top strip and under the outlets on the back face.
+- **Safe island contents:** the relay drivers, the NTCs (against the relays' coil ends), the isolator's safe side and its LDO, and J4. Every hot-to-safe distance is ≥8 mm creepage and clearance. `params.py` checks it numerically; KiCad checks it by net class at placement.
 
 ### Front board (SELV only)
 
 - **Outline:** a frame of about 136 × 76 mm in the faceplate cavity, with one cutout per outlet. Each cutout is the contact envelope plus 8 mm, so the board's copper keeps 8 mm from mains metal in air.
-- **ESP32-C6-MINI-1:** bottom centre, on the back face, over the relays (2.7 mm clear of their tops). The antenna end sits at the bottom edge in the plate rim, in front of the box opening (z > 0, as spec v0.1 requires), with no copper under or around it. Top centre would put it 0.8 mm above the LD03. Proposed; confirm at placement.
+- **ESP32-C6-MINI-1:** bottom centre, on the back face, over the safe island's bottom bar. The antenna end sits at the bottom edge in the plate rim, in front of the box opening (z > 0, as spec v0.1 requires). The board is cut away under the antenna and has no copper beside it (Espressif). Top centre would put it 0.8 mm above the LD03.
 - **Touch:** one 20 mm electrode centred under each outlet, with a QT1011 beside each.
 - **Light lines:** the SK6812MINI-E LEDs in the touch zones, two per outlet.
-- **NFC:** the coil antenna in the centre strip, under the plate's NFC mark. It now sits above the LD03, so check tag reads with the supply running at EVT.
+- **NFC:** the coil antenna on the centre bridge, under the plate's NFC mark. It sits over the LD03, whose transformer can detune it, so check tag reads with the supply running at EVT. No back-face parts over the LD03 (a rule area enforces it), so the NT3H2111 goes beside the coil, not under it.
 
 ### Board-to-board link
 
@@ -166,6 +169,37 @@ Print notes: allow ±0.2 mm for FDM and ±0.1 mm for SLA. Each part gets an orie
 2. **Board link:** a 14-way, 1.0 mm FFC with FPC connectors replaces the 2 × 7, 1.27 mm header (J4/J101).
 3. **Printing:** a print service in Accra. I supply the STLs plus a sheet of materials and settings.
 4. **Front board:** 1.6 mm thick. The ESP32 sits on its back face, offset from the LD03 in plan view.
+
+## 11. v0.1 results (11 Nov 2026)
+
+Built and checked:
+- **Shared dimensions:** `params.py`. 17 fit and zoning checks pass, and CI runs them.
+- **Enclosure v0.1:** `enclosure.py`, with STEP and STL files in `out/` and the print sheet in `PRINT.md`.
+- **Board outlines v0.1:** `outlines.py`, written into both `.kicad_pcb` files. KiCad DRC reports only warnings about the footprint library table in this headless setup.
+- **Renders:** in `renders/`.
+
+The interference check across all parts, both boards and the tall components finds no clashes. It does catch a planted test overlap.
+
+What changed from sections 4–5, and why:
+1. **The relays lie down, coil ends toward a central safe island.** With both relays standing under the LD03 (the concept renders), there is no 16 mm corridor (8 mm each side) to carry the LD03's 5 V and the coil drives past the relays' contact ends.
+2. **The isolator U5 goes on the rear board's back face.** On the top face every edge of the island is taken by a carrier, the LD03 or a relay. On the back face, U5's hot pins sit under the left carrier, which is free there.
+   - **What else I tried, and why it fails:** putting the LD03 at the bottom instead encloses its mains pins inside the safe zone.
+   - **Clearances:** nearest hot copper to the island is 8.15 mm (the inner L and N contact pads); the relay contact pads are 8.98 mm away.
+3. **J4 and J101 turn 90°:** pin row along y, at (0, −5).
+   - **Why:** lengthwise the connector is 25 mm over its pads and the stem is 24.
+   - **Cable path:** the cable leaves toward +x and folds up between the boards; Type A (same-side) FFC.
+4. **The antenna can't get Espressif's 15 mm clearance from metal:** the plate stands 9 mm proud of a steel box. The board is cut away under the antenna as Espressif recommends, and Wi-Fi in a steel box stays an EVT test, with the ESP32-C6-MINI-1U as the fallback (spec v0.1).
+5. **Fixings:**
+   - frame posts take M2.5 brass heat-set inserts, with nylon screws;
+   - the carriers sit on pins on the frame (heat-staked or glued);
+   - the rear cover shares the rear board's four screws.
+6. **Earth pin clearance:** the earth pin (22.7 mm) ends 2.3 mm above the rear board. That is enough, but the donor's earth contact must take the full pin length above the board.
+
+Proposed for Daniel's review (each is a `PROPOSED` value in `params.py`):
+- zoning v0: the T-shaped island, relays lying in the bottom strip, U5 on the back face;
+- outlet pitch 68 mm and outlet height 4 mm above the centre line, until the donor confirms them;
+- touch electrode in two halves with the light line between them; light line through the middle of each 20 mm touch zone;
+- rear cover floor 4.4 mm under the rear board (back-face parts up to 3.5 mm), which leaves 11.4 mm of cable space.
 
 ## Sources
 

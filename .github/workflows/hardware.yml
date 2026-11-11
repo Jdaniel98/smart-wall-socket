@@ -17,11 +17,14 @@ jobs:
       - name: Install kicad-cli (KiCad 7 from the Ubuntu archive)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends kicad
+          sudo apt-get install -y --no-install-recommends kicad python3-shapely
           kicad-cli version
 
       - name: Check schematics against the design data
         run: python3 hardware/tools/verify.py
+
+      - name: Mechanical fit and zoning checks (params.py)
+        run: python3 hardware/mech/params.py
 
       - name: Export schematic PDFs
         run: |
