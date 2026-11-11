@@ -1,6 +1,17 @@
 # EVT1 schematic: review notes
 
-Draft E, 10 Nov 2026, with part numbers, pinout checks and the first footprints. For Daniel's engineering review before layout starts.
+Draft F, 11 Nov 2026. For Daniel's engineering review before layout starts.
+
+## What changed in draft F (layout plan)
+
+- **Board link:** J4 and J101 are now 14-way, 1.0 mm FPC connectors instead of the 2 × 7, 1.27 mm header pair. The layout plan puts the boards about 20 mm apart, too far for a header.
+  - **Connector:** TE 1-84952-4, bottom contact, right angle, 1 A and 200 V AC per contact (LCSC C574848). JLC had 73 in stock on 11 Nov, so reserve them early; the top-contact version is 1-84953-4 (LCSC C3169461).
+  - **Pin map:** unchanged, so +5 V and GND keep two contacts each: 2 A capacity against the 0.6 A peak.
+  - **Cable:** 14-way, 1.0 mm FFC, 0.3 mm thick, same-side contacts (Type A). With both connectors bottom-contact and the cable folded into a C between them, the same face of the cable meets both connectors. The conductors run straight through the bends, so J101 pin 1 must sit at the same y as J4 pin 1; I place it that way at layout.
+  - **Cable length:** set at layout from the cable path, about 40 mm. JLC's same-side 14-way cables start at 10 cm (C34155); the 5 cm cable (C128003) is reverse-contact, which would need J101 changed to the top-contact 1-84953-4. I'll pick one at layout.
+  - **Safety:** the cable carries only SELV and runs in the safe zone. Its insulation is not counted in any hot-to-safe distance.
+
+Draft E (10 Nov) added the part numbers, pinout checks and the first footprints.
 
 ## What changed in draft E (S2 simulation checks)
 
@@ -62,7 +73,7 @@ All six accepted by Daniel on 10 Nov 2026. D7 is required by the firmware. D8 is
 | D7 | BL0939 address pins strapped to address 5: A1 and A3 to 3.3 V, A2 and A4 to the hot-side ground. | The firmware sends 0x55 (read) and 0xA5 (write). Per the datasheet these are 0x50 and 0xA0 plus the 4-bit address, so they only work at address 5. The pins have internal pull-downs; left floating, the chip sits at address 0 and never answers. |
 | D8 | Voltage divider bottom resistor 470 Ω (Proto 0 used 510 Ω). | The datasheet's pin table limits VP to ±100 mV (70 mV rms); its electrical table says 200 mV peak. I designed to the lower figure. With 510 Ω, the 275 V instant trip is already past the limit (71.9 mV rms). With 470 Ω, 230 V gives 55.4 mV rms and the limit is reached at 290 V. The firmware's EVT board file sets `div_r_bottom_kohm = 0.47`. |
 | D9 | Light lines: four SK6812MINI-E addressable RGB LEDs on one data pin, two per outlet. Their 5 V rail is switched off in standby. | All 22 usable ESP32-C6 GPIOs are allocated, so discrete white and RGB LEDs do not fit. With the rail switched off, the LEDs' idle current (about 1 mA each) stays out of the standby budget. |
-| D10 | Isolator safe side powered by its own XC6206 3.3 V LDO on the rear board. | The 2 × 7 header has no spare pin for 3.3 V. Powering the isolator from 5 V would put 5 V logic on ESP32 pins. |
+| D10 | Isolator safe side powered by its own XC6206 3.3 V LDO on the rear board. | The board link (then a 2 × 7 header, now a 14-way FFC) has no spare pin for 3.3 V. Powering the isolator from 5 V would put 5 V logic on ESP32 pins. |
 | D11 | The BL0939's two alarm outputs (CF for channel A, I_LEAK for channel B) are ORed on the hot side into isolator channel E. | One isolator channel covers both outlets. Both outputs are active high per the datasheet. |
 | D12 | ESP32-C6 GPIO map as below. | Fixed by the netlist; the firmware's `board_evt_c6.c` must match. |
 

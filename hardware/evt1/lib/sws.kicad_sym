@@ -155,16 +155,16 @@
       (pin passive line (at 0.0000 -5.0800 90) (length 2.54) (name "~" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
     )
   )
-  (symbol "Conn_B2B_2x07" (pin_names (offset 0.762)) (in_bom yes) (on_board yes)
+  (symbol "Conn_FFC_1x14" (pin_names (offset 0.762)) (in_bom yes) (on_board yes)
     (property "Reference" "J" (at 0 11.4300 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "Conn_B2B_2x07" (at 0 -11.4300 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "Conn_FFC_1x14" (at 0 -11.4300 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
     (property "Datasheet" "~" (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
-    (property "ki_description" "Board-to-board, 2 x 7, 1.27 mm. Same pin map on both boards." (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
-    (symbol "Conn_B2B_2x07_0_1"
+    (property "ki_description" "Board-to-board FPC connector, 14-way, 1.0 mm, for a Type A FFC. Same pin map on both boards." (at 0 0 0) (effects (font (size 1.27 1.27)) hide))
+    (symbol "Conn_FFC_1x14_0_1"
       (rectangle (start -10.1600 10.1600) (end 10.1600 -10.1600) (stroke (width 0.254) (type default)) (fill (type background)))
     )
-    (symbol "Conn_B2B_2x07_1_1"
+    (symbol "Conn_FFC_1x14_1_1"
       (pin passive line (at -12.7000 7.6200 0) (length 2.54) (name "+5V" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
       (pin passive line (at -12.7000 5.0800 0) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
       (pin passive line (at -12.7000 2.5400 0) (length 2.54) (name "MTR_TX" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))

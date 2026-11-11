@@ -10,7 +10,7 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 4,D101 D102 D103 D104,SK6812MINI-E,SK6812MINI-E,OPSCO,C5149201,"yes, 10 Nov 2026",sws:LED_SK6812MINI-E_Reverse,yes,Outlet 1 line; Outlet 2 line
 1,E101,Touch key 1,,,n/a,"PCB feature, not a bought part",sws:TouchPad_12mm,yes,
 1,E102,Touch key 2,,,n/a,"PCB feature, not a bought part",sws:TouchPad_12mm,yes,
-1,J101,B2B socket 2x7 1.27mm,PM127-2-07-S-4.3,HCTL,C3975133,"yes, 10 Nov 2026",Connector_PinSocket_1.27mm:PinSocket_2x07_P1.27mm_Vertical_SMD,yes,
+1,J101,FPC 14P 1.0mm bottom contact,1-84952-4,TE Connectivity,C574848,"yes, 10 Nov 2026",Connector_FFC-FPC:TE_1-84952-4_1x14-1MP_P1.0mm_Horizontal,yes,
 1,L101,2.2uH 1.65A 45mR shielded,YNR4018-2R2M,YJYCOIN,C340367,"yes, 10 Nov 2026",Inductor_SMD:L_Bourns-SRN4018,yes,"Isat >= 2.5 A, DCR <= 60 mOhm"
 1,Q101,AO3401A,AO3401A,AOS,C15127,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,
 1,Q102,2N7002,2N7002,,C8545,"JLC basic, confirm at order",Package_TO_SOT_SMD:SOT-23,yes,

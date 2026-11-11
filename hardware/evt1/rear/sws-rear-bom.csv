@@ -18,7 +18,7 @@ Qty,Designators,Value,MPN,Manufacturer,LCSC,LCSC checked,Footprint,Fitted,Notes
 1,J1,Mains terminal L/N/E,Mains terminal L/N/E,,n/a,"mechanical, chosen with the enclosure",sws:Mains_Terminal_3x2.5mm2,yes,Screw terminals for 3 x 2.5 mm2 ring conductors; part chosen with the mechanism
 1,J2,Outlet 1 contacts,Outlet 1 contacts,,n/a,"mechanical, chosen with the enclosure",sws:BS1363_Outlet_Contacts,yes,
 1,J3,Outlet 2 contacts,Outlet 2 contacts,,n/a,"mechanical, chosen with the enclosure",sws:BS1363_Outlet_Contacts,yes,
-1,J4,B2B header 2x7 1.27mm,PZ127-2-07-S,HCTL,C3975190,"yes, 10 Nov 2026",Connector_PinHeader_1.27mm:PinHeader_2x07_P1.27mm_Vertical_SMD,yes,
+1,J4,FPC 14P 1.0mm bottom contact,1-84952-4,TE Connectivity,C574848,"yes, 10 Nov 2026",Connector_FFC-FPC:TE_1-84952-4_1x14-1MP_P1.0mm_Horizontal,yes,
 2,K1 K2,G5RL-1A-E DC5,G5RL-1A-E DC5,Omron,C397237,"in EVT plan, reconfirm",sws:Relay_Omron_G5RL-1A-E,yes,Second source Hongfa HF115F/005-1HS3AF (C882368); footprint holes widened for its 2.52 mm grid
 2,L1 L2,1mH 0.36A,VLU0810-102K,FH,C72626,"yes, 10 Nov 2026",Inductor_THT:L_Radial_D8.7mm_P5.00mm_Fastron_07HCP,yes,Buck choke; Pi-filter choke
 1,PS1,LD03-23B05R2,LD03-23B05R2,Mornsun,n/a,Mornsun distributor or DigiKey 2725-LD03-23B05R2-ND (D4),sws:Mornsun_LD03-23B,yes,Buy from Mornsun distributors or DigiKey 2725-LD03-23B05R2-ND; not LCSC third-party

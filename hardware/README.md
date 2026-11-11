@@ -50,7 +50,7 @@ Inside a block, parts are placed in rows, and each IC has the parts that connect
 - Every power input is driven by a source or a PWR_FLAG.
 - No net has two outputs.
 - Only U5 (isolator), PS1 (LD03), K1 and K2 (relays) touch both mains and safe nets.
-- The board-to-board header carries no mains net and has the same pin map on both boards.
+- The board-to-board link (14-way FFC, J4/J101) carries no mains net and has the same pin map on both boards.
 - The ESP32 pads match the GPIO map the firmware will use.
 
 ## CI
